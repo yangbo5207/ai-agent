@@ -1,3 +1,5 @@
+@source "./**/*.{ts,tsx}";
+
 @theme {
   --color-brand-50: #f3f7ff;
   --color-brand-100: #dce8ff;

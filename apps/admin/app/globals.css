@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@source "../../../packages/ui/src/**/*.{ts,tsx}";
 @import "@repo/ui/theme.css";
 
 :root {
