@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "exports": {
+    "./theme.css": "./src/theme.css",
     "./*": "./src/*.tsx"
   },
   "scripts": {
