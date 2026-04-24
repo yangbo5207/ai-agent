@@ -1,27 +1,36 @@
-import { type JSX } from "react";
+import * as React from "react";
+import { cn } from "./lib/utils";
 
-export function Card({
-  className,
-  title,
-  children,
-  href,
-}: {
-  className?: string;
-  title: string;
-  children: React.ReactNode;
-  href: string;
-}): JSX.Element {
+function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <a
-      className={className}
-      href={`${href}?utm_source=create-turbo&utm_medium=basic&utm_campaign=create-turbo"`}
-      rel="noopener noreferrer"
-      target="_blank"
-    >
-      <h2>
-        {title} <span>-&gt;</span>
-      </h2>
-      <p>{children}</p>
-    </a>
+    <div
+      className={cn(
+        "rounded-[2rem] border border-white/10 bg-slate-950/45 text-slate-50 shadow-card backdrop-blur",
+        className,
+      )}
+      {...props}
+    />
   );
 }
+
+function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
+  return <div className={cn("flex flex-col gap-1.5 p-6", className)} {...props} />;
+}
+
+function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+  return <div className={cn("text-xl font-semibold tracking-tight", className)} {...props} />;
+}
+
+function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
+  return <div className={cn("text-sm leading-6 text-slate-300", className)} {...props} />;
+}
+
+function CardContent({ className, ...props }: React.ComponentProps<"div">) {
+  return <div className={cn("px-6 pb-6", className)} {...props} />;
+}
+
+function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
+  return <div className={cn("flex items-center px-6 pb-6", className)} {...props} />;
+}
+
+export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle };
