@@ -1,15 +1,21 @@
 {
-  "name": "api",
+  "name": "@repo/api",
   "type": "module",
+  "exports": {
+    ".": "./src/app.ts"
+  },
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --minify",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings"
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@repo/contracts": "workspace:*",
     "hono": "^4.12.14"
   },
   "devDependencies": {
+    "typescript": "catalog:",
     "wrangler": "^4.4.0"
   }
 }

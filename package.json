@@ -6,7 +6,7 @@
     "dev": "turbo run dev",
     "dev:web": "turbo run dev --filter=web",
     "dev:admin": "turbo run dev --filter=admin",
-    "dev:api": "turbo run dev --filter=api",
+    "dev:api": "turbo run dev --filter=@repo/api",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types"
