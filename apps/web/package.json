@@ -17,7 +17,8 @@
     "hono": "^4.12.14",
     "next": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
@@ -26,6 +27,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "dotenv-cli": "^8.0.0",
     "eslint": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"

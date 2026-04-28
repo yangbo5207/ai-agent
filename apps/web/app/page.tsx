@@ -1,10 +1,3 @@
-import type { AppType } from "@repo/api";
-import {
-  BizCode,
-  type ApiResponse,
-  type PingRequest,
-  type PingResponse,
-} from "@repo/contracts";
 import { Button } from "@repo/ui/button";
 import {
   Card,
@@ -12,8 +5,16 @@ import {
 } from "@repo/ui/card";
 import { TailwindDemo } from "@repo/ui/tailwind-demo";
 import { hc, type InferResponseType } from "hono/client";
+import type { AppType } from "@repo/api";
+import {
+  BizCode,
+  type ApiResponse,
+  type PingRequest,
+  type PingResponse,
+} from "@repo/contracts";
+import { getWebServerEnv } from "../src/env.server";
+import { WebEnvBadge } from "../src/web-env-badge";
 
-const apiBaseUrl = process.env.API_BASE_URL ?? "http://127.0.0.1:8787";
 const rpcPath = "/rpc/system/ping";
 const rpcPayload: PingRequest = { name: "web" };
 
@@ -21,7 +22,7 @@ type PingRpcResponse = InferResponseType<
   ReturnType<typeof hc<AppType>>["rpc"]["system"]["ping"]["$post"]
 >;
 
-async function getPingResponse(): Promise<PingRpcResponse> {
+async function getPingResponse(apiBaseUrl: string): Promise<PingRpcResponse> {
   const client = hc<AppType>(apiBaseUrl);
 
   try {
@@ -65,7 +66,8 @@ const subTags = [
 ];
 
 export default async function Home() {
-  const pingResult = await getPingResponse();
+  const env = getWebServerEnv();
+  const pingResult = await getPingResponse(env.API_BASE_URL);
   const requestBody = JSON.stringify(rpcPayload, null, 2);
   const responseBody = JSON.stringify(pingResult, null, 2);
 
@@ -211,6 +213,9 @@ export default async function Home() {
             </div>
             <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
               <span className="rounded-full border border-border px-3 py-1">
+                server {env.APP_ENV}
+              </span>
+              <span className="rounded-full border border-border px-3 py-1">
                 POST {rpcPath}
               </span>
               <span
@@ -223,9 +228,10 @@ export default async function Home() {
                 {pingResult.ok ? "ok=true" : `code=${pingResult.error.code}`}
               </span>
               <span className="rounded-full border border-border px-3 py-1">
-                {apiBaseUrl}
+                {env.API_BASE_URL}
               </span>
             </div>
+            <WebEnvBadge />
             <div className="grid gap-4 lg:grid-cols-2">
               <div className="rounded-2xl border border-border bg-muted/40 p-4">
                 <p className="text-sm font-medium text-foreground">Request</p>

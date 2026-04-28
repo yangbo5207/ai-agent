@@ -5,20 +5,33 @@
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": [".next/**", "!.next/cache/**"],
+      "env": ["APP_ENV", "API_BASE_URL", "NEXT_PUBLIC_APP_ENV", "NEXT_PUBLIC_API_BASE_URL"]
+    },
+    "build:test": {
+      "dependsOn": ["^build:test"],
+      "env": ["APP_ENV", "API_BASE_URL", "NEXT_PUBLIC_APP_ENV", "NEXT_PUBLIC_API_BASE_URL"]
+    },
+    "start:test": {
+      "env": ["APP_ENV", "API_BASE_URL", "NEXT_PUBLIC_APP_ENV", "NEXT_PUBLIC_API_BASE_URL"]
     },
     "lint": {
       "dependsOn": ["^lint"],
-      "env": ["API_BASE_URL"]
+      "env": ["APP_ENV", "API_BASE_URL", "NEXT_PUBLIC_APP_ENV", "NEXT_PUBLIC_API_BASE_URL"]
     },
     "check-types": {
       "dependsOn": ["^check-types"],
-      "env": ["API_BASE_URL"]
+      "env": ["APP_ENV", "API_BASE_URL", "NEXT_PUBLIC_APP_ENV", "NEXT_PUBLIC_API_BASE_URL"]
     },
     "dev": {
       "cache": false,
       "persistent": true,
-      "env": ["API_BASE_URL"]
+      "env": ["APP_ENV", "API_BASE_URL", "NEXT_PUBLIC_APP_ENV", "NEXT_PUBLIC_API_BASE_URL"]
+    },
+    "dev:test": {
+      "cache": false,
+      "persistent": true,
+      "env": ["APP_ENV", "API_BASE_URL", "NEXT_PUBLIC_APP_ENV", "NEXT_PUBLIC_API_BASE_URL"]
     }
   }
 }

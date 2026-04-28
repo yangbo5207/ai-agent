@@ -7,6 +7,11 @@
     "dev:web": "turbo run dev --filter=web",
     "dev:admin": "turbo run dev --filter=admin",
     "dev:api": "turbo run dev --filter=@repo/api",
+    "dev:api:test": "turbo run dev:test --filter=@repo/api",
+    "build:web:test": "turbo run build:test --filter=web",
+    "start:web:test": "turbo run start:test --filter=web",
+    "build:admin:test": "turbo run build:test --filter=admin",
+    "start:admin:test": "turbo run start:test --filter=admin",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "check-types": "turbo run check-types"

@@ -5,8 +5,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --port 3006",
+    "dev:test": "dotenv -e .env.test.local -- next dev --port 3006",
     "build": "next build",
+    "build:test": "dotenv -e .env.test.local -- next build",
     "start": "next start",
+    "start:test": "dotenv -e .env.test.local -- next start",
     "lint": "eslint --max-warnings 0",
     "check-types": "next typegen && tsc --noEmit"
   },
@@ -14,7 +17,8 @@
     "@repo/ui": "workspace:*",
     "next": "catalog:",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
@@ -23,6 +27,7 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "dotenv-cli": "^8.0.0",
     "eslint": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"

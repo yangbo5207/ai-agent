@@ -10,6 +10,8 @@ import { Input } from "@repo/ui/input";
 import { Label } from "@repo/ui/label";
 import { Separator } from "@repo/ui/separator";
 import { TailwindDemo } from "@repo/ui/tailwind-demo";
+import { AdminEnvBadge } from "../src/admin-env-badge";
+import { getAdminServerEnv } from "../src/env.server";
 
 const checks = [
   "Tailwind utilities compile in this app",
@@ -18,6 +20,8 @@ const checks = [
 ];
 
 export default function Home() {
+  const env = getAdminServerEnv();
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-10 px-6 py-12 md:px-10 lg:px-12">
       <section className="space-y-5">
@@ -34,6 +38,32 @@ export default function Home() {
           </p>
         </div>
       </section>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Environment overview</CardTitle>
+          <CardDescription>
+            The admin app reads private server variables and public browser variables separately.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="rounded-[var(--radius-surface)] border border-border bg-background px-4 py-3 shadow-soft">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+                APP_ENV
+              </p>
+              <p className="mt-2 text-sm font-medium text-foreground">{env.APP_ENV}</p>
+            </div>
+            <div className="rounded-[var(--radius-surface)] border border-border bg-background px-4 py-3 shadow-soft">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+                API_BASE_URL
+              </p>
+              <p className="mt-2 break-all text-sm font-medium text-foreground">{env.API_BASE_URL}</p>
+            </div>
+          </div>
+          <AdminEnvBadge />
+        </CardContent>
+      </Card>
 
       <TailwindDemo appName="admin" />
 

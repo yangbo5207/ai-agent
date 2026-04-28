@@ -6,13 +6,17 @@
   },
   "scripts": {
     "dev": "wrangler dev",
+    "dev:test": "wrangler dev --env test",
     "deploy": "wrangler deploy --minify",
+    "deploy:test": "wrangler deploy --env test --minify",
+    "deploy:production": "wrangler deploy --env production --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
     "@repo/contracts": "workspace:*",
-    "hono": "^4.12.14"
+    "hono": "^4.12.14",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "typescript": "catalog:",
