@@ -1,12 +1,55 @@
 @source "./**/*.{ts,tsx}";
 
 @theme {
-  --color-brand-50: #f3f7ff;
-  --color-brand-100: #dce8ff;
-  --color-brand-500: #4f7cff;
-  --color-brand-600: #315ee8;
-  --color-brand-700: #2749bb;
-  --color-surface-strong: rgba(15, 23, 42, 0.78);
-  --shadow-card: 0 24px 60px rgba(15, 23, 42, 0.18);
-  --radius-card: 1.5rem;
+  /* Background & Foreground */
+  --color-background: #FAFAFA;
+  --color-foreground: #0f0f0f;
+
+  /* Card */
+  --color-card: #ffffff;
+  --color-card-foreground: #0f0f0f;
+
+  /* Primary */
+  --color-primary: #171717;
+  --color-primary-foreground: #FAFAFA;
+
+  /* Secondary */
+  --color-secondary: #f5f5f5;
+  --color-secondary-foreground: #171717;
+
+  /* Muted */
+  --color-muted: #f5f5f5;
+  --color-muted-foreground: #737373;
+
+  /* Accent */
+  --color-accent: #f5f5f5;
+  --color-accent-foreground: #171717;
+
+  /* Border & Input */
+  --color-border: #e5e5e5;
+  --color-input: #e5e5e5;
+  --color-ring: #a3a3a3;
+
+  /* Destructive */
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #FAFAFA;
+
+  /* Sidebar colors */
+  --color-sidebar-background: #FAFAFA;
+  --color-sidebar-foreground: #404040;
+  --color-sidebar-primary: #171717;
+  --color-sidebar-primary-foreground: #FAFAFA;
+  --color-sidebar-accent: #f0f0f0;
+  --color-sidebar-accent-foreground: #171717;
+  --color-sidebar-border: #e8e8e8;
+  --color-sidebar-ring: #a3a3a3;
+
+  /* Shadows — subtle black transparency for depth */
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.04);
+  --shadow-soft: 0 6px 20px rgba(0, 0, 0, 0.03);
+
+  /* Radius */
+  --radius-control: 0.625rem;
+  --radius-surface: 1rem;
+  --radius-card: 1.25rem;
 }

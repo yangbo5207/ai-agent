@@ -23,18 +23,23 @@ const features = [
 
 export function TailwindDemo({ appName }: TailwindDemoProps) {
   return (
-    <Card className="w-full max-w-5xl overflow-hidden bg-[linear-gradient(135deg,rgba(79,124,255,0.18),rgba(15,23,42,0.92))]">
-      <CardHeader className="gap-4 md:flex-row md:items-start md:justify-between">
+    <Card className="w-full max-w-5xl overflow-hidden">
+      <CardHeader className="gap-5 md:flex-row md:items-start md:justify-between">
         <div className="space-y-3">
-          <span className="inline-flex w-fit items-center rounded-full border border-brand-500/20 bg-brand-50 px-3 py-1 text-xs font-semibold tracking-[0.24em] text-brand-700 uppercase">
+          <span className="inline-flex w-fit items-center rounded-[var(--radius-control)] border border-border bg-muted px-3 py-1 text-xs font-semibold tracking-[0.24em] text-muted-foreground uppercase">
             shared ui package
           </span>
           <div className="space-y-2">
-            <CardTitle className="text-2xl text-white md:text-3xl">
+            <CardTitle className="text-2xl md:text-3xl">
               Tailwind and shadcn primitives are active in {appName}
             </CardTitle>
-            <CardDescription className="max-w-2xl text-slate-200">
-              This section is rendered from <code className="rounded bg-white/10 px-2 py-1 text-slate-100">packages/ui</code> and now uses reusable Button, Card, Input, Label, and Separator components.
+            <CardDescription className="max-w-2xl">
+              This section is rendered from{" "}
+              <code className="rounded-[var(--radius-control)] border border-border bg-background px-2 py-1 text-foreground">
+                packages/ui
+              </code>{" "}
+              and uses reusable Button, Card, Input, Label, and Separator
+              components.
             </CardDescription>
           </div>
         </div>
@@ -43,7 +48,7 @@ export function TailwindDemo({ appName }: TailwindDemoProps) {
           {features.map((feature) => (
             <div
               key={feature}
-              className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-slate-100 shadow-sm shadow-black/10"
+              className="rounded-[var(--radius-surface)] border border-border bg-background px-4 py-3 text-sm font-medium text-muted-foreground shadow-soft"
             >
               {feature}
             </div>
@@ -51,8 +56,8 @@ export function TailwindDemo({ appName }: TailwindDemoProps) {
         </div>
       </CardHeader>
 
-      <CardContent className="grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-        <div className="space-y-4 rounded-[1.5rem] border border-white/10 bg-slate-950/35 p-5">
+      <CardContent className="grid gap-5 lg:grid-cols-[1.3fr_0.7fr]">
+        <div className="space-y-4 rounded-[var(--radius-surface)] border border-border bg-background p-4 shadow-soft">
           <div className="space-y-2">
             <Label htmlFor={`${appName}-workspace`}>Workspace label</Label>
             <Input
@@ -68,21 +73,30 @@ export function TailwindDemo({ appName }: TailwindDemoProps) {
           </div>
         </div>
 
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5 text-sm leading-6 text-slate-200">
+        <div className="rounded-[var(--radius-surface)] border border-border bg-muted p-4 text-sm leading-6 text-muted-foreground shadow-soft">
           <p>
-            The same primitives can now be imported from the shared package and reused in both sub-apps without adding separate component copies.
+            The same primitives can be imported from the shared package and reused
+            in both sub-apps without adding separate component copies.
           </p>
         </div>
       </CardContent>
 
-      <CardFooter className="flex-wrap gap-3 border-t border-white/10 pt-6">
+      <CardFooter className="flex-wrap gap-3 border-t border-border pt-5">
         <Button asChild variant="ghost">
-          <a href="https://ui.shadcn.com/docs/components/button" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://ui.shadcn.com/docs/components/button"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             View shadcn button reference
           </a>
         </Button>
         <Button asChild variant="outline">
-          <a href="https://ui.shadcn.com/docs/components/card" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://ui.shadcn.com/docs/components/card"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             View card reference
           </a>
         </Button>

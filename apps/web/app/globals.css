@@ -2,20 +2,21 @@
 @import "@repo/ui/theme.css";
 
 :root {
-  --background: #060816;
-  --foreground: #f8fafc;
+  --background: #FAFAFA;
+  --foreground: #0f0f0f;
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top, rgba(79, 124, 255, 0.24), transparent 42%),
-    var(--background);
+  background: var(--background);
   color: var(--foreground);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
