@@ -2,7 +2,8 @@
   "name": "@repo/api",
   "type": "module",
   "exports": {
-    ".": "./src/app.ts"
+    ".": "./src/app.ts",
+    "./client": "./src/client.ts"
   },
   "scripts": {
     "dev": "wrangler dev",
