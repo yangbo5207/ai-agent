@@ -5,9 +5,9 @@ import {
   buildSuccess,
   type ApiMeta,
 } from '@repo/contracts'
+import { zValidator } from '@hono/zod-validator'
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
-import { validator } from 'hono/validator'
 import { getApiEnv } from './env'
 
 type AppErrorStatus = 400 | 401 | 403 | 404 | 409 | 422 | 500 | 504
@@ -40,108 +40,76 @@ app.onError((error, c) => {
   const meta = createMeta()
 
   if (error instanceof AppError) {
-    return c.json(
-      buildFailure(
-        {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-        },
-        meta,
-      ),
-      error.status,
-    )
+    const res = {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+    }
+
+    return c.json(buildFailure(res, meta), error.status)
   }
 
   if (error instanceof HTTPException) {
-    return c.json(
-      buildFailure(
-        {
-          code: BizCode.COMMON_INVALID_REQUEST,
-          message: error.message,
-        },
-        meta,
-      ),
-      error.status,
-    )
+    const res = {
+      code: BizCode.COMMON_INVALID_REQUEST,
+      message: error.message,
+    }
+
+    return c.json(buildFailure(res, meta), error.status)
   }
 
   console.error(error)
 
-  return c.json(
-    buildFailure(
-      {
-        code: BizCode.SYSTEM_INTERNAL_ERROR,
-        message: 'Internal server error',
-      },
-      meta,
-    ),
-    500,
-  )
+  const res = {
+    code: BizCode.SYSTEM_INTERNAL_ERROR,
+    message: 'Internal server error',
+  }
+
+  return c.json(buildFailure(res, meta), 500)
 })
 
 app.notFound((c) => {
-  return c.json(
-    buildFailure(
-      {
-        code: BizCode.COMMON_NOT_FOUND,
-        message: 'Not found',
-      },
-      createMeta(),
-    ),
-    404,
-  )
+  const res = {
+    code: BizCode.COMMON_NOT_FOUND,
+    message: 'Not found',
+  }
+
+  return c.json(buildFailure(res, createMeta()), 404)
 })
 
 const routes = app
   .get('/health', (c) => {
     const env = getApiEnv(c.env)
+    const res = {
+      service: 'api',
+      env: env.APP_ENV,
+    }
 
-    return c.json(
-      buildSuccess(
-        {
-          service: 'api',
-          env: env.APP_ENV,
-        },
-        createMeta(),
-      ),
-    )
+    return c.json(buildSuccess(res, createMeta()))
   })
-  .post(
-    '/rpc/system/ping',
-    validator('json', (value, c) => {
-      const parsed = PingRequestSchema.safeParse(value)
-
-      if (!parsed.success) {
-        return c.json(
-          buildFailure(
-            {
-              code: BizCode.COMMON_INVALID_REQUEST,
-              message: 'Invalid request payload',
-              details: parsed.error.flatten(),
-            },
-            createMeta(),
-          ),
-          400,
-        )
+  .post('/rpc/system/ping', zValidator('json', PingRequestSchema, (result, c) => {
+      if (result.success) {
+        return
       }
 
-      return parsed.data
+      const res = {
+        code: BizCode.COMMON_INVALID_REQUEST,
+        message: 'Invalid request payload',
+        details: result.error.issues,
+      }
+
+      return c.json(buildFailure(res, createMeta()), 400)
     }),
     (c) => {
       const payload = c.req.valid('json')
       const env = getApiEnv(c.env)
+      const res = {
+        service: 'api',
+        message: `pong, ${payload.name}`,
+        env: env.APP_ENV,
+      }
 
-      return c.json(
-        buildSuccess(
-          {
-            service: 'api',
-            message: `pong, ${payload.name}`,
-            env: env.APP_ENV,
-          },
-          createMeta(),
-        ),
-      )
+      return c.json(buildSuccess(res, createMeta()))
     },
   )
 
