@@ -26,6 +26,11 @@ const demos = [
     title: 'Order detail',
     description: 'Validate order domain route organization and POST detail lookup.',
   },
+  {
+    href: '/verify/client/system/ping',
+    title: 'Client ping demo',
+    description: 'Validate direct browser-to-API access from a client component with NEXT_PUBLIC_API_BASE_URL.',
+  },
 ]
 
 export default function Home() {
