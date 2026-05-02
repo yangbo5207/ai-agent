@@ -18,6 +18,9 @@ catalogs:
     '@tailwindcss/postcss':
       specifier: ^4.1.15
       version: 4.2.4
+    '@tanstack/react-query':
+      specifier: ^5.76.2
+      version: 5.100.7
     '@types/node':
       specifier: ^22.15.3
       version: 22.15.3
@@ -77,6 +80,9 @@ importers:
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.100.7(react@19.2.5)
       next:
         specifier: 'catalog:'
         version: 16.2.4(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -154,6 +160,9 @@ importers:
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.100.7(react@19.2.5)
       hono:
         specifier: ^4.12.14
         version: 4.12.14
@@ -982,6 +991,14 @@ packages:
 
   '@tailwindcss/postcss@4.2.4':
     resolution: {integrity: sha512-wgAVj6nUWAolAu8YFvzT2cTBIElWHkjZwFYovF+xsqKsW2ADxM/X2opxj5NsF/qVccAOjRNe8X2IdPzMsWyHTg==}
+
+  '@tanstack/query-core@5.100.7':
+    resolution: {integrity: sha512-5R7i6ENJLhVeeJrrUz7jKBXUXv/BJrxf9FQJSkR13bPrb3zOcE8A0Z0PxYCcsKPOsiIlTibrBL/zZbtUO1TFyQ==}
+
+  '@tanstack/react-query@5.100.7':
+    resolution: {integrity: sha512-LoISYWz8dOOuQbeIctF8K6yi42TWtR1WPGpwGuRUpF3u79JVVIg/PVR0MQdIA0VSHqD/ydf/b7PhKTkg3I4fLQ==}
+    peerDependencies:
+      react: ^18 || ^19
 
   '@turbo/darwin-64@2.9.6':
     resolution: {integrity: sha512-X/56SnVXIQZBLKwniGTwEQTGmtE5brSACnKMBWpY3YafuxVYefrC2acamfjgxP7BG5w3I+6jf0UrLoSzgPcSJg==}
@@ -2721,6 +2738,13 @@ snapshots:
       '@tailwindcss/oxide': 4.2.4
       postcss: 8.5.10
       tailwindcss: 4.2.4
+
+  '@tanstack/query-core@5.100.7': {}
+
+  '@tanstack/react-query@5.100.7(react@19.2.5)':
+    dependencies:
+      '@tanstack/query-core': 5.100.7
+      react: 19.2.5
 
   '@turbo/darwin-64@2.9.6':
     optional: true

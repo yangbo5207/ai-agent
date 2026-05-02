@@ -14,6 +14,7 @@
     "@repo/api": "workspace:*",
     "@repo/contracts": "workspace:*",
     "@repo/ui": "workspace:*",
+    "@tanstack/react-query": "catalog:",
     "hono": "^4.12.14",
     "next": "catalog:",
     "react": "catalog:",
