@@ -21,6 +21,20 @@ import { cn } from "@/lib/utils"
 
 const regularPlans = [
   {
+    name: "日常版",
+    tag: "新增",
+    price: 200,
+    dailyLimit: "30 美元/日",
+    weeklyLimit: "150 美元/周",
+    monthlyLimit: "600 美元/月",
+    usage: [
+      "GPT-5.6：日常开发与 Agent 协作",
+      "稳定额度：适合持续使用",
+    ],
+    borderClassName: "border-slate-900",
+    toneClassName: "bg-slate-950 text-white",
+  },
+  {
     name: "Pro 5X",
     tag: "推荐",
     price: 560,
@@ -103,6 +117,7 @@ const pro5xDeals = [
 ]
 
 const highlights = [
+  { label: "已支持模型", value: "GPT-5.6", icon: Sparkles },
   { label: "日常原价", value: "¥560/月", icon: Receipt },
   { label: "单月基准", value: "¥400/月", icon: Banknote },
   { label: "最低月均", value: "¥300/月", icon: TrendingDown },
@@ -111,10 +126,18 @@ const highlights = [
 ]
 
 const policyItems = [
-  "购买后单独开通 Pro 套餐，支持 GPT-5.5 与 GPT-5.4 模型稳定调用。",
+  "购买后单独开通 Pro 套餐，支持 GPT-5.6、GPT-5.5 与 GPT-5.4 模型稳定调用。",
   "独享 API Key 与高速通道，适合 Codex、Agent、技术写作和自动化开发场景。",
   "本活动仅针对 Pro 5X 做周期优惠；Pro 10X 与 Pro 20X 仍按日常套餐价格展示。",
 ]
+
+const topUpPack = {
+  name: "月包加油包",
+  price: 100,
+  credit: "200 美元",
+  validity: "开通起 1 个月",
+  usage: "额度内不限制使用",
+}
 
 const recommendationStats = [
   { label: "原价总额", value: "¥6720", helper: "按 ¥560/月", valueClassName: "text-slate-700" },
@@ -195,9 +218,9 @@ export default function BuyTokensPage() {
   return (
     <DashboardShell title="购买 Token">
       <main className="min-h-[calc(100vh-4rem)] bg-slate-50/70">
-        <section className="bg-white px-4 pt-4 sm:px-5 sm:pt-5 lg:px-8">
-          <div className="border-b border-slate-200 pb-5">
-            <div className="mx-auto grid max-w-6xl gap-5">
+        <section className="border-b border-slate-200 bg-white">
+          <div className="mx-auto max-w-7xl px-4 py-7 sm:px-5 sm:py-8 lg:px-8">
+            <div className="grid gap-6">
               <div className="flex min-w-0 gap-3 sm:gap-4">
                 <div className="hidden size-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 sm:flex">
                   <Coins className="size-5" />
@@ -210,10 +233,10 @@ export default function BuyTokensPage() {
                     <span>Token Offer</span>
                   </div>
                   <h1 className="mt-2 text-xl font-semibold tracking-tight text-slate-950 sm:text-2xl">
-                    Pro 5X Token 优惠活动
+                    Token 套餐与优惠
                   </h1>
                   <p className="mt-2 max-w-5xl text-[15px] leading-7 text-slate-600">
-                    面向 tocodex.space 用户的周期优惠页。Pro 5X 会同时按日常原价 ¥560/月和单月优惠基准 ¥400/月计算节省金额，方便判断长期购买到底多省了多少。
+                    日常套餐、月包加油包与 Pro 5X 长周期优惠会在同一处展示，方便按使用频率、额度和购买周期进行判断。
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-slate-100 px-2.5 text-[11px] font-medium text-slate-500">
@@ -226,22 +249,19 @@ export default function BuyTokensPage() {
                     </span>
                     <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-slate-100 px-2.5 text-[11px] font-medium text-slate-500">
                       <Sparkles className="size-3.5" />
-                      GPT-5.5 / GPT-5.4
+                      GPT-5.6 / GPT-5.5 / GPT-5.4
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="grid w-full gap-1 border-t border-slate-200 pt-3">
-                {highlights.map((item, index) => {
+              <div className="grid w-full grid-cols-2 gap-px overflow-hidden border border-slate-200 bg-slate-100 sm:grid-cols-3 xl:grid-cols-6">
+                {highlights.map((item) => {
                   const Icon = item.icon
 
                   return (
                     <div
-                      className={cn(
-                        "flex min-w-0 items-center gap-3 px-1 py-2",
-                        index > 0 && "border-t border-slate-100",
-                      )}
+                      className="flex min-w-0 items-center gap-3 bg-white px-3 py-3"
                       key={item.label}
                     >
                       <div className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-400">
@@ -257,12 +277,12 @@ export default function BuyTokensPage() {
           </div>
         </section>
 
-        <section className="px-4 py-4 sm:px-5 sm:py-5 lg:px-8">
-          <div className="mx-auto grid max-w-6xl gap-5">
+        <section className="px-4 py-8 sm:px-5 sm:py-10 lg:px-8">
+          <div className="mx-auto max-w-7xl space-y-10">
             <div className="grid gap-5">
-              <section className="rounded-2xl">
-                <div className="grid gap-1">
-                  <article className="bg-white p-5">
+              <section>
+                <div className="grid gap-5">
+                  <article className="rounded-md border border-slate-200 bg-white p-5 sm:p-6">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                       <div>
                         <p className="flex items-center gap-2 text-sm font-semibold text-slate-950">
@@ -270,35 +290,39 @@ export default function BuyTokensPage() {
                           日常套餐透明定价
                         </p>
                         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                          以下为 tocodex.space 日常 Pro 套餐价格。Pro 5X 长周期优惠会同时展示两个节省口径：按日常原价 ¥560/月计算，以及按单月优惠价 ¥400/月计算。
+                          日常版新增 ¥200/月档位；Pro 5X 长周期优惠仍同时展示两个节省口径：按日常原价 ¥560/月计算，以及按单月优惠价 ¥400/月计算。
                         </p>
                       </div>
-                      <div className="grid grid-cols-2 gap-y-3 border-t border-slate-200 pt-3 sm:w-[30rem] sm:grid-cols-4 sm:gap-y-0 sm:border-t-0 sm:pt-0">
-                        <div className="pr-3 sm:pr-4">
-                          <p className="text-[10px] font-medium text-slate-400">5X 原价</p>
-                          <p className="mt-1 text-sm font-medium text-slate-700">¥560/月</p>
-                        </div>
-                        <div className="border-l border-slate-200 pl-3 sm:px-4">
-                          <p className="text-[10px] font-medium text-slate-400">5X 单月</p>
-                          <p className="mt-1 text-sm font-medium text-slate-700">¥400/月</p>
-                        </div>
-                        <div className="border-t border-slate-100 pr-3 pt-3 sm:border-l sm:border-t-0 sm:px-4 sm:pt-0">
-                          <p className="text-[10px] font-medium text-slate-400">10X 原价</p>
-                          <p className="mt-1 text-sm font-medium text-slate-700">¥900/月</p>
-                        </div>
-                        <div className="border-l border-t border-slate-100 pl-3 pt-3 sm:border-slate-200 sm:border-t-0 sm:pl-4 sm:pt-0">
-                          <p className="text-[10px] font-medium text-slate-400">20X 原价</p>
-                          <p className="mt-1 text-sm font-medium text-slate-700">¥1800/月</p>
-                        </div>
+                      <div className="grid grid-cols-2 gap-y-3 border-t border-slate-200 pt-3 sm:w-[38rem] sm:grid-cols-5 sm:gap-y-0 sm:border-t-0 sm:pt-0">
+                        {[
+                          { label: "日常版", value: "¥200/月" },
+                          { label: "5X 原价", value: "¥560/月" },
+                          { label: "5X 单月", value: "¥400/月" },
+                          { label: "10X 原价", value: "¥900/月" },
+                          { label: "20X 原价", value: "¥1800/月" },
+                        ].map((item, index) => (
+                          <div
+                            className={cn(
+                              "px-3 first:pl-0 sm:px-4 sm:first:pl-0 sm:last:pr-0",
+                              index % 2 === 1 && "border-l border-slate-200",
+                              index > 1 && "border-t border-slate-100 pt-3 sm:border-t-0 sm:pt-0",
+                              index > 0 && "sm:border-l sm:border-slate-200",
+                            )}
+                            key={item.label}
+                          >
+                            <p className="text-[10px] font-medium text-slate-400">{item.label}</p>
+                            <p className="mt-1 text-sm font-medium text-slate-700">{item.value}</p>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   </article>
 
-                  <div className="grid gap-1 lg:grid-cols-3">
+                  <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-4">
                     {regularPlans.map((plan) => (
                       <article
                         className={cn(
-                          "flex flex-col border-t bg-white p-5 lg:min-h-[42rem]",
+                          "flex h-full flex-col rounded-md border bg-white p-5 sm:p-6",
                           plan.borderClassName,
                         )}
                         key={plan.name}
@@ -321,7 +345,7 @@ export default function BuyTokensPage() {
                         </div>
 
                         <p className="mt-4 text-center text-sm leading-6 text-slate-600">
-                          付费之后，单独开启 Pro 套餐，支持 GPT-5.5 与 GPT-5.4 模型稳定调用。
+                          付费之后，单独开启 Pro 套餐，支持 GPT-5.6、GPT-5.5 与 GPT-5.4 模型稳定调用。
                         </p>
 
                         <div className="mt-6 border-y border-slate-200 py-4">
@@ -347,7 +371,7 @@ export default function BuyTokensPage() {
                         </div>
 
                         <ul className="mt-5 space-y-3 text-sm font-medium text-slate-700">
-                          {["GPT-5.5 可用", "GPT-5.4 可用", "独享 API Key & 高速通道"].map((feature) => (
+                          {["GPT-5.6 可用", "GPT-5.5 / GPT-5.4 可用", "独享 API Key & 高速通道"].map((feature) => (
                             <li className="flex items-center gap-3" key={feature}>
                               <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
                               <span>{feature}</span>
@@ -355,7 +379,7 @@ export default function BuyTokensPage() {
                           ))}
                         </ul>
 
-                        <Button className="mt-auto rounded-full" disabled type="button">
+                        <Button className="mt-6 w-full rounded-md" disabled type="button">
                           咨询开通
                         </Button>
                       </article>
@@ -364,9 +388,46 @@ export default function BuyTokensPage() {
                 </div>
               </section>
 
-              <section className="rounded-2xl">
-                <div className="grid grid-cols-1 gap-1 md:grid-cols-2 2xl:grid-cols-4">
-                  <article className="bg-slate-950 p-5 text-white md:col-span-2 2xl:col-span-4">
+              <section className="rounded-md border border-slate-200 bg-white">
+                <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_14rem] lg:items-end">
+                  <div>
+                    <p className="flex items-center gap-2 text-sm font-semibold text-slate-950">
+                      <Zap className="size-4 text-slate-500" />
+                      {topUpPack.name}
+                    </p>
+                    <h2 className="mt-2 text-xl font-semibold text-slate-950">一个月内自由使用的补充额度</h2>
+                    <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                      适合短期高强度开发、批量任务或临时项目需求。开通后在一个月以内不限制使用频率，仅受总额度约束。
+                    </p>
+                  </div>
+                  <div className="border-t border-slate-200 pt-4 lg:border-l lg:border-t-0 lg:pl-5 lg:pt-0">
+                    <p className="text-[10px] font-medium text-slate-400">加油包价格</p>
+                    <p className="mt-1 text-3xl font-semibold text-slate-950">{formatCurrency(topUpPack.price)}</p>
+                    <Button className="mt-4 w-full rounded-md" disabled type="button" variant="outline">
+                      加油包即将开放
+                    </Button>
+                  </div>
+                </div>
+                <div className="grid border-t border-slate-200 sm:grid-cols-3">
+                  {[
+                    { label: "总额度", value: topUpPack.credit },
+                    { label: "有效期", value: topUpPack.validity },
+                    { label: "使用限制", value: topUpPack.usage },
+                  ].map((item, index) => (
+                    <div
+                      className={cn("px-5 py-5 sm:px-6", index > 0 && "border-t border-slate-100 sm:border-l sm:border-t-0")}
+                      key={item.label}
+                    >
+                      <p className="text-[10px] font-medium text-slate-400">{item.label}</p>
+                      <p className="mt-2 text-sm font-semibold text-slate-800">{item.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section>
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-2 2xl:grid-cols-4">
+                  <article className="rounded-md bg-slate-950 p-5 text-white sm:p-6 md:col-span-2 2xl:col-span-4">
                     <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
                       <div>
                         <p className="flex items-center gap-2 text-sm font-semibold text-white">
@@ -407,7 +468,7 @@ export default function BuyTokensPage() {
                       <article
                         className={cn(
                           deal.spanClassName,
-                          "relative flex flex-col bg-white p-5 md:min-h-[30rem]",
+                          "relative flex min-h-[30rem] flex-col rounded-md border border-slate-200 bg-white p-5 sm:p-6",
                           deal.recommended && "bg-slate-100",
                         )}
                         key={deal.title}
@@ -463,7 +524,7 @@ export default function BuyTokensPage() {
                           </div>
                         </div>
 
-                        <Button className="mt-auto rounded-full" disabled={!isBestDeal} type="button" variant={isBestDeal ? "default" : "outline"}>
+                        <Button className="mt-6 w-full rounded-md" disabled={!isBestDeal} type="button" variant={isBestDeal ? "default" : "outline"}>
                           {isBestDeal ? "最大优惠方案" : "咨询购买"}
                         </Button>
                       </article>
@@ -472,7 +533,7 @@ export default function BuyTokensPage() {
                 </div>
               </section>
 
-              <section className="rounded-2xl bg-white p-5">
+              <section className="rounded-md border border-slate-200 bg-white p-5 sm:p-6">
                 <div className="flex flex-col gap-2 border-b border-slate-200 pb-4 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <p className="flex items-center gap-2 text-sm font-semibold text-slate-950">
@@ -563,9 +624,9 @@ export default function BuyTokensPage() {
               </section>
             </div>
 
-            <div className="grid w-full gap-5">
-              <section className="overflow-hidden rounded-2xl bg-white">
-                <div className="grid gap-5 p-5 sm:grid-cols-[minmax(0,1fr)_13rem] sm:items-end">
+            <div className="grid w-full gap-6 lg:grid-cols-2">
+              <section className="overflow-hidden rounded-md border border-slate-200 bg-white lg:col-span-2">
+                <div className="grid gap-6 p-5 sm:p-6 sm:grid-cols-[minmax(0,1fr)_13rem] sm:items-end">
                   <div>
                     <div className="flex items-center gap-3">
                       <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white">
@@ -590,7 +651,7 @@ export default function BuyTokensPage() {
                     <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-slate-400">best value</p>
                     <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">¥300</p>
                     <p className="mt-1 text-xs text-slate-500">最低月均成本</p>
-                    <Button className="mt-4 w-full rounded-full" disabled type="button">
+                    <Button className="mt-4 w-full rounded-md" disabled type="button">
                       联系开通
                     </Button>
                   </div>
@@ -617,7 +678,7 @@ export default function BuyTokensPage() {
                 </div>
               </section>
 
-              <section className="rounded-2xl bg-white p-5">
+              <section className="rounded-md border border-slate-200 bg-white p-5 sm:p-6">
                 <div className="flex items-start gap-3 border-b border-slate-200 pb-4">
                   <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
                     <CircleDollarSign className="size-4" />
@@ -662,7 +723,7 @@ export default function BuyTokensPage() {
                 </div>
               </section>
 
-              <section className="rounded-2xl bg-white p-5">
+              <section className="rounded-md border border-slate-200 bg-white p-5 sm:p-6">
                 <div className="flex items-start justify-between gap-3 border-b border-slate-200 pb-4">
                   <div className="flex items-start gap-3">
                     <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
@@ -688,7 +749,7 @@ export default function BuyTokensPage() {
                 </div>
               </section>
 
-              <section className="rounded-2xl border border-slate-200 bg-white p-5">
+              <section className="rounded-md border border-slate-200 bg-white p-5 sm:p-6 lg:col-span-2">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-950">优惠状态</p>

@@ -262,309 +262,316 @@ export default function CreateAgentCompanionPage() {
   return (
     <DashboardShell title="创建 Agent 伴侣">
       <main className="min-h-[calc(100vh-4rem)] bg-slate-50/70">
-        <section className="bg-white px-5 pt-5 lg:px-8">
-          <div className="border-b border-slate-200 pb-5">
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_25rem] xl:items-end">
+        <section className="border-b border-slate-200 bg-white">
+          <div className="mx-auto flex max-w-[90rem] flex-col gap-5 px-5 py-6 lg:px-8 lg:py-7 xl:flex-row xl:items-end xl:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-medium text-slate-400">AGENT COMPANION</p>
+              <h1 className="mt-2 text-2xl font-semibold text-slate-950">创建 Agent 伴侣</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                从角色设定到互动边界，依次完善一个稳定、清晰的陪伴角色。
+              </p>
+            </div>
+
+            <div className="flex items-center gap-4 border-t border-slate-200 pt-4 xl:border-t-0 xl:pt-0">
               <div className="min-w-0">
-                <div className="flex items-center gap-2 text-[11px] font-medium text-slate-400">
-                  <span>Agent Builder</span>
-                  <span className="h-px w-8 bg-slate-200" />
-                  <span>Prompt Studio</span>
-                </div>
-                <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-                  创建一个能长期陪伴的 Agent 角色
-                </h1>
-                <p className="mt-2 max-w-2xl text-sm leading-7 text-slate-600">
-                  基础人设、人物故事背景、语气和边界都会被组合成角色默认提示词，用于后续聊天时保持角色一致。
+                <p className="text-xs font-medium text-slate-400">完成度</p>
+                <p className="mt-1 text-sm font-medium text-slate-800">
+                  {completedCount} / {completionChecks.length} 项已完成
                 </p>
               </div>
-
-              <div className="grid grid-cols-3 border-t border-slate-200 pt-3 xl:border-t-0 xl:pt-0">
-                {[
-                  { label: "完成度", value: `${completedCount}/4`, icon: CheckCircle2 },
-                  { label: "状态", value: form.status === "draft" ? "草稿" : "发布", icon: PenLine },
-                  { label: "可见性", value: form.visibility === "private" ? "私有" : "公开", icon: BadgeCheck },
-                ].map((item, index) => {
-                  const Icon = item.icon
-
-                  return (
-                    <div
-                      className={cn(index === 0 ? "pr-4" : "border-l border-slate-200 px-4 last:pr-0")}
-                      key={item.label}
-                    >
-                      <div className="mb-2 flex size-6 items-center justify-center rounded-lg bg-slate-100 text-slate-400">
-                        <Icon className="size-3.5" />
-                      </div>
-                      <p className="text-[10px] font-medium text-slate-400">{item.label}</p>
-                      <p className="mt-1 text-sm font-medium leading-none text-slate-700">{item.value}</p>
-                    </div>
-                  )
-                })}
+              <div className="h-8 w-px bg-slate-200" />
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-slate-400">当前状态</p>
+                <p className="mt-1 text-sm font-medium text-slate-800">
+                  {form.status === "draft" ? "保存为草稿" : "创建后可聊天"}
+                </p>
               </div>
             </div>
           </div>
         </section>
 
-        <section className="grid gap-5 px-5 py-5 lg:px-8 xl:grid-cols-[minmax(0,1fr)_25rem]">
-          <div className="grid gap-5">
-            <section className="grid gap-1 overflow-hidden rounded-2xl md:grid-cols-[minmax(17rem,24rem)_minmax(0,1fr)] 2xl:grid-cols-[minmax(18rem,26rem)_minmax(0,1fr)]">
-              <article className="relative flex aspect-[2/3] min-h-0 flex-col overflow-hidden bg-[#d7d7d7] p-4">
+        <section className="mx-auto grid max-w-[90rem] gap-8 px-5 py-8 lg:px-8 xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start">
+          <div className="min-w-0 space-y-8">
+            <section aria-labelledby="agent-profile-heading" className="border border-slate-200 bg-white px-5 py-6 sm:px-7">
+              <div className="flex items-start gap-4 border-b border-slate-200 pb-5">
+                <span className="pt-0.5 text-xs font-medium text-slate-400">01</span>
+                <div>
+                  <h2 className="text-base font-semibold text-slate-900" id="agent-profile-heading">角色资料</h2>
+                  <p className="mt-1 text-sm leading-6 text-slate-500">名称和一句话设定会显示在伴侣列表与聊天界面中。</p>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-6 lg:grid-cols-[11.5rem_minmax(0,1fr)]">
+                <label className="relative flex aspect-[2/3] cursor-pointer flex-col overflow-hidden bg-slate-100 p-4 text-slate-500 transition-colors hover:bg-slate-200">
+                  <input
+                    accept="image/jpeg,image/png,image/webp"
+                    className="sr-only"
+                    disabled={isUploadingImage}
+                    onChange={(event) => {
+                      void handleImageChange(event.currentTarget.files?.[0] ?? null)
+                      event.currentTarget.value = ""
+                    }}
+                    type="file"
+                  />
                   {imagePreviewUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      alt={form.name}
-                      className="absolute inset-0 size-full object-cover"
-                      src={imagePreviewUrl}
-                    />
+                    <img alt={form.name} className="absolute inset-0 size-full object-cover" src={imagePreviewUrl} />
                   ) : null}
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.62),transparent_17rem),linear-gradient(180deg,transparent_45%,rgba(255,255,255,0.42)_100%)]" />
-                  <div className="relative flex items-center justify-between gap-3">
-                    <span className="rounded-full border border-white/70 bg-white/50 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                      角色形象
-                    </span>
-                    <span className="rounded-full border border-white/70 bg-white/50 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                      {form.imageKey ? "已上传" : "2:3 竖图"}
-                    </span>
-                  </div>
+                  <span className="relative inline-flex w-fit bg-white/90 px-2 py-1 text-[11px] font-medium text-slate-600">
+                    {form.imageKey ? "已上传" : "角色形象"}
+                  </span>
+                  <span className="relative m-auto flex size-11 items-center justify-center bg-white/90">
+                    {isUploadingImage ? <Loader2 className="size-5 animate-spin" /> : <ImagePlus className="size-5" />}
+                  </span>
+                  <span className="relative text-center text-xs font-medium text-slate-600">
+                    {isUploadingImage ? "上传中" : imagePreviewUrl ? "更换图片" : "上传图片"}
+                  </span>
+                </label>
 
-                  <label className="relative m-auto flex size-32 cursor-pointer flex-col items-center justify-center rounded-[2rem] border border-white/70 bg-white/35 text-slate-500 transition-colors hover:bg-white/55">
-                    <input
-                      accept="image/jpeg,image/png,image/webp"
-                      className="sr-only"
-                      disabled={isUploadingImage}
-                      onChange={(event) => {
-                        void handleImageChange(event.currentTarget.files?.[0] ?? null)
-                        event.currentTarget.value = ""
-                      }}
-                      type="file"
-                    />
-                    {isUploadingImage ? (
-                      <Loader2 className="size-10 animate-spin" />
-                    ) : imagePreviewUrl ? (
-                      <Wand2 className="size-10" />
-                    ) : (
-                      <ImagePlus className="size-10" />
-                    )}
-                    <span className="mt-2 text-[11px] font-medium">
-                      {isUploadingImage ? "上传中" : imagePreviewUrl ? "更换图片" : "上传图片"}
-                    </span>
-                  </label>
-
-                  <div className="relative border-t border-white/70 pt-4">
-                    <p className="truncate text-lg font-semibold tracking-tight text-slate-900">{form.name}</p>
-                    <p className="mt-1 line-clamp-2 max-w-lg text-sm leading-6 text-slate-600">
-                      {form.headline}
-                    </p>
-                    <p className="mt-2 text-[11px] font-medium text-slate-500">
-                      建议 2:3 竖版，至少 720 x 1080px，最大 2MB
-                    </p>
+                <div className="grid content-start gap-5">
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    <label className="grid gap-2" htmlFor="agent-name">
+                      <span className="text-sm font-medium text-slate-700">角色名称</span>
+                      <Input
+                        id="agent-name"
+                        onChange={(event) => updateField("name", event.currentTarget.value)}
+                        placeholder="例如：星野 Luna"
+                        value={form.name}
+                      />
+                    </label>
+                    <label className="grid gap-2" htmlFor="agent-headline">
+                      <span className="text-sm font-medium text-slate-700">一句话设定</span>
+                      <Input
+                        id="agent-headline"
+                        onChange={(event) => updateField("headline", event.currentTarget.value)}
+                        placeholder="例如：温柔稳定的长期聊天伴侣"
+                        value={form.headline}
+                      />
+                    </label>
                   </div>
-              </article>
+                  <p className="border-t border-slate-100 pt-4 text-xs leading-5 text-slate-400">
+                    角色图支持 JPG、PNG、WebP；建议使用 2:3 竖图，至少 720 x 1080px，最大 2MB。
+                  </p>
+                </div>
+              </div>
+            </section>
 
-              <div className="grid auto-rows-[82px] grid-flow-dense grid-cols-1 gap-1 md:grid-cols-2">
-                <article className="row-span-3 flex min-h-0 flex-col bg-white p-4 md:col-span-2">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                      <Bot className="size-4 text-slate-500" />
-                      基础信息
-                    </p>
-                    <span className="text-[11px] font-medium text-slate-500">Profile</span>
-                  </div>
-                  <div className="grid gap-2 md:grid-cols-2">
-                    <Input
-                      aria-label="角色名称"
-                      onChange={(event) => updateField("name", event.currentTarget.value)}
-                      placeholder="角色名称"
-                      value={form.name}
-                    />
-                    <Input
-                      aria-label="一句话设定"
-                      onChange={(event) => updateField("headline", event.currentTarget.value)}
-                      placeholder="一句话设定"
-                      value={form.headline}
-                    />
-                  </div>
-                </article>
+            <section aria-labelledby="agent-world-heading" className="border border-slate-200 bg-white px-5 py-6 sm:px-7">
+              <div className="flex items-start gap-4 border-b border-slate-200 pb-5">
+                <span className="pt-0.5 text-xs font-medium text-slate-400">02</span>
+                <div>
+                  <h2 className="text-base font-semibold text-slate-900" id="agent-world-heading">角色世界</h2>
+                  <p className="mt-1 text-sm leading-6 text-slate-500">先定义角色的陪伴价值，再补充可以自然延续的背景信息。</p>
+                </div>
+              </div>
 
-                {promptSections.map((section) => {
+              <div className="mt-6 grid gap-6">
+                {promptSections.slice(0, 2).map((section) => {
                   const Icon = section.icon
 
                   return (
-                    <article
-                      className="row-span-4 flex min-h-0 flex-col bg-white p-4 md:col-span-2"
-                      key={section.key}
-                    >
-                      <div className="mb-3 flex items-center justify-between gap-3">
-                        <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                          <Icon className="size-4 text-slate-500" />
-                          {section.label}
-                        </p>
-                        <span className="text-[11px] font-medium text-slate-500">Prompt</span>
-                      </div>
+                    <label className="grid gap-3" htmlFor={`agent-${section.key}`} key={section.key}>
+                      <span className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                        <Icon className="size-4 text-slate-400" />
+                        {section.label}
+                      </span>
                       <Textarea
-                        aria-label={section.label}
-                        className="min-h-0 flex-1 resize-none rounded-xl bg-slate-50/70 text-sm leading-6"
+                        id={`agent-${section.key}`}
+                        className="min-h-32 resize-y border-slate-200 bg-slate-50/50 text-sm leading-6"
                         onChange={(event) => updateField(section.key, event.currentTarget.value)}
                         value={form[section.key]}
                       />
-                    </article>
+                    </label>
                   )
                 })}
-
-                <article className="row-span-3 flex min-h-0 flex-col bg-white p-4 md:col-span-2">
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                      <MessageCircle className="size-4 text-slate-500" />
-                      默认开场
-                    </p>
-                    <span className="text-[11px] font-medium text-slate-500">Opening</span>
-                  </div>
-                  <Textarea
-                    aria-label="默认开场"
-                    className="min-h-0 flex-1 resize-none rounded-xl bg-slate-50/70 text-sm leading-6"
-                    onChange={(event) => updateField("openingMessage", event.currentTarget.value)}
-                    value={form.openingMessage}
-                  />
-                </article>
               </div>
+            </section>
+
+            <section aria-labelledby="agent-behavior-heading" className="border border-slate-200 bg-white px-5 py-6 sm:px-7">
+              <div className="flex items-start gap-4 border-b border-slate-200 pb-5">
+                <span className="pt-0.5 text-xs font-medium text-slate-400">03</span>
+                <div>
+                  <h2 className="text-base font-semibold text-slate-900" id="agent-behavior-heading">互动方式</h2>
+                  <p className="mt-1 text-sm leading-6 text-slate-500">明确性格、表达习惯和不可突破的边界，避免角色在聊天中失去一致性。</p>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-6 lg:grid-cols-2">
+                {promptSections.slice(2).map((section, index) => {
+                  const Icon = section.icon
+
+                  return (
+                    <label
+                      className={cn("grid gap-3", index === 2 && "lg:col-span-2")}
+                      htmlFor={`agent-${section.key}`}
+                      key={section.key}
+                    >
+                      <span className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                        <Icon className="size-4 text-slate-400" />
+                        {section.label}
+                      </span>
+                      <Textarea
+                        id={`agent-${section.key}`}
+                        className={cn(
+                          "resize-y border-slate-200 bg-slate-50/50 text-sm leading-6",
+                          index === 2 ? "min-h-36" : "min-h-32",
+                        )}
+                        onChange={(event) => updateField(section.key, event.currentTarget.value)}
+                        value={form[section.key]}
+                      />
+                    </label>
+                  )
+                })}
+              </div>
+            </section>
+
+            <section aria-labelledby="agent-opening-heading" className="border border-slate-200 bg-white px-5 py-6 sm:px-7">
+              <div className="flex items-start gap-4 border-b border-slate-200 pb-5">
+                <span className="pt-0.5 text-xs font-medium text-slate-400">04</span>
+                <div>
+                  <h2 className="text-base font-semibold text-slate-900" id="agent-opening-heading">默认开场</h2>
+                  <p className="mt-1 text-sm leading-6 text-slate-500">这是用户第一次进入对话时，角色说出的第一句话。</p>
+                </div>
+              </div>
+
+              <label className="mt-6 grid gap-3" htmlFor="agent-opening-message">
+                <span className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                  <MessageCircle className="size-4 text-slate-400" />
+                  开场消息
+                </span>
+                <Textarea
+                  id="agent-opening-message"
+                  className="min-h-28 resize-y border-slate-200 bg-slate-50/50 text-sm leading-6"
+                  onChange={(event) => updateField("openingMessage", event.currentTarget.value)}
+                  value={form.openingMessage}
+                />
+              </label>
             </section>
           </div>
 
-          <aside className="grid content-start gap-5">
-            <section className="overflow-hidden rounded-2xl bg-white">
-              <div className="relative overflow-hidden bg-[#e4e4e4] p-4">
+          <aside className="xl:sticky xl:top-20">
+            <section className="overflow-hidden border border-slate-200 bg-white">
+              <div className="relative aspect-[2/3] bg-slate-100 p-4">
                 {imagePreviewUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    alt={form.name}
-                    className="absolute inset-0 size-full object-cover"
-                    src={imagePreviewUrl}
-                  />
+                  <img alt={form.name} className="absolute inset-0 size-full object-cover" src={imagePreviewUrl} />
                 ) : null}
-                <div className="relative flex items-center justify-between gap-3">
-                  <span className="rounded-full border border-white/70 bg-white/50 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                    实时预览
-                  </span>
-                  <span className="rounded-full border border-white/70 bg-white/50 px-2.5 py-1 text-[11px] font-medium text-slate-600">
+                <div className="relative flex items-start justify-between gap-3">
+                  <span className="bg-white/90 px-2 py-1 text-[11px] font-medium text-slate-600">实时预览</span>
+                  <span className="bg-white/90 px-2 py-1 text-[11px] font-medium text-slate-600">
                     {form.visibility === "private" ? "私有" : "公开"}
                   </span>
                 </div>
-
-                <div className="relative mt-14 border-t border-white/70 pt-4">
-                  <p className="truncate text-lg font-semibold tracking-tight text-slate-900">{form.name}</p>
-                  <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-600">{form.headline}</p>
+                {!imagePreviewUrl ? (
+                  <div className="absolute inset-0 flex items-center justify-center text-slate-300">
+                    <Bot className="size-10" />
+                  </div>
+                ) : null}
+                <div className="absolute inset-x-0 bottom-0 bg-white/95 px-4 py-4">
+                  <p className="truncate text-base font-semibold text-slate-900">{form.name || "未命名角色"}</p>
+                  <p className="mt-1 line-clamp-2 text-sm leading-5 text-slate-500">{form.headline || "一句话设定会显示在这里"}</p>
                 </div>
               </div>
-            </section>
 
-            <section className="rounded-2xl bg-white p-4">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
-                <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                  <ShieldCheck className="size-4 text-slate-500" />
-                  发布设置
-                </p>
-                <span className="text-[11px] font-medium text-slate-400">Save</span>
+              <div className="p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">保存设置</p>
+                    <p className="mt-1 text-xs text-slate-400">{completedCount} / {completionChecks.length} 项基础信息已完成</p>
+                  </div>
+                  <BadgeCheck className="size-5 text-slate-400" />
+                </div>
+
+                <div className="mt-5 grid gap-4 border-y border-slate-100 py-5">
+                  <label className="grid gap-2">
+                    <span className="text-xs font-medium text-slate-500">保存状态</span>
+                    <Select
+                      onValueChange={(value) => updateField("status", value as CreateMyAgentCompanionRequest["status"])}
+                      value={form.status}
+                    >
+                      <SelectTrigger className="h-9 w-full border-slate-200 bg-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="draft">保存草稿</SelectItem>
+                        <SelectItem value="published">创建后可聊天</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </label>
+
+                  <label className="grid gap-2">
+                    <span className="text-xs font-medium text-slate-500">可见性</span>
+                    <Select
+                      onValueChange={(value) => updateField("visibility", value as CreateMyAgentCompanionRequest["visibility"])}
+                      value={form.visibility}
+                    >
+                      <SelectTrigger className="h-9 w-full border-slate-200 bg-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="private">仅自己可见</SelectItem>
+                        <SelectItem value="public">允许后续发布到广场</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </label>
+                </div>
+
+                <div className="py-4">
+                  {completionChecks.map((item) => {
+                    const done = Boolean(String(form[item.field]).trim())
+
+                    return (
+                      <div className="flex items-center gap-3 py-1.5" key={item.label}>
+                        <span className={cn("flex size-5 items-center justify-center", done ? "text-emerald-600" : "text-slate-300")}>
+                          {done ? <CheckCircle2 className="size-4" /> : <Sparkles className="size-3.5" />}
+                        </span>
+                        <span className="min-w-0 flex-1 text-sm text-slate-600">{item.label}</span>
+                        <span className="text-xs text-slate-400">{done ? "完成" : "待补充"}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {errorMessage ? (
+                  <p className="border border-red-200 bg-red-50 px-3 py-2 text-sm leading-6 text-red-600">
+                    {errorMessage}
+                  </p>
+                ) : null}
+
+                <Button
+                  className="mt-1 h-10 w-full rounded-md"
+                  disabled={isSaving || isUploadingImage}
+                  onClick={handleSubmit}
+                  type="button"
+                >
+                  {isUploadingImage ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      上传形象中
+                    </>
+                  ) : isSaving ? (
+                    <>
+                      <Wand2 className="size-4 animate-spin" />
+                      保存中
+                    </>
+                  ) : (
+                    <>
+                      <Send className="size-4" />
+                      保存 Agent
+                    </>
+                  )}
+                </Button>
+
+                <details className="mt-5 border-t border-slate-100 pt-4">
+                  <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-slate-600">
+                    <PenLine className="size-4 text-slate-400" />
+                    查看默认提示词
+                  </summary>
+                  <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap border border-slate-100 bg-slate-50 p-3 text-xs leading-5 text-slate-500">
+                    {previewPrompt}
+                  </pre>
+                </details>
               </div>
-
-              <div className="mt-4 grid gap-3">
-                <label className="grid gap-1.5">
-                  <span className="text-xs font-medium text-slate-500">状态</span>
-                  <Select
-                    onValueChange={(value) => updateField("status", value as CreateMyAgentCompanionRequest["status"])}
-                    value={form.status}
-                  >
-                    <SelectTrigger className="h-9 w-full rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">保存草稿</SelectItem>
-                      <SelectItem value="published">创建后可聊天</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </label>
-
-                <label className="grid gap-1.5">
-                  <span className="text-xs font-medium text-slate-500">可见性</span>
-                  <Select
-                    onValueChange={(value) => updateField("visibility", value as CreateMyAgentCompanionRequest["visibility"])}
-                    value={form.visibility}
-                  >
-                    <SelectTrigger className="h-9 w-full rounded-xl">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="private">仅自己可见</SelectItem>
-                      <SelectItem value="public">允许后续发布到广场</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </label>
-              </div>
-
-              <div className="mt-4 grid gap-2">
-                {completionChecks.map((item) => {
-                  const done = Boolean(String(form[item.field]).trim())
-
-                  return (
-                    <div className="flex items-center gap-3 border-t border-slate-100 py-2 first:border-t-0 first:pt-0" key={item.label}>
-                      <span
-                        className={cn(
-                          "flex size-6 items-center justify-center rounded-lg",
-                          done ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-400",
-                        )}
-                      >
-                        {done ? <CheckCircle2 className="size-3.5" /> : <Sparkles className="size-3.5" />}
-                      </span>
-                      <span className="min-w-0 flex-1 text-sm font-medium text-slate-700">{item.label}</span>
-                      <span className="text-[11px] font-medium text-slate-400">
-                        {done ? "完成" : "待补充"}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
-
-              {errorMessage ? (
-                <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
-                  {errorMessage}
-                </p>
-              ) : null}
-
-              <Button
-                className="mt-4 h-9 w-full rounded-full"
-                disabled={isSaving || isUploadingImage}
-                onClick={handleSubmit}
-                type="button"
-              >
-                {isUploadingImage ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" />
-                    上传形象中
-                  </>
-                ) : isSaving ? (
-                  <>
-                    <Wand2 className="size-4 animate-spin" />
-                    保存中
-                  </>
-                ) : (
-                  <>
-                    <Send className="size-4" />
-                    保存 Agent
-                  </>
-                )}
-              </Button>
-            </section>
-
-            <section className="rounded-2xl bg-white p-4">
-              <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
-                <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                  <PenLine className="size-4 text-slate-500" />
-                  默认提示词
-                </p>
-                <span className="text-[11px] font-medium text-slate-400">Generated</span>
-              </div>
-              <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded-xl bg-slate-50/80 p-3 text-xs leading-5 text-slate-600">
-                {previewPrompt}
-              </pre>
             </section>
           </aside>
         </section>

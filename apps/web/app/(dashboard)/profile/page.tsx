@@ -14,9 +14,7 @@ import {
   MessageCircle,
   Palette,
   RefreshCw,
-  Search,
   ShieldCheck,
-  Sparkles,
   UserRound,
 } from "lucide-react"
 import type { UserProfileResponse } from "@repo/contracts"
@@ -25,14 +23,6 @@ import { uploadWebUserAvatar } from "@/auth/api"
 import { UserAvatar } from "@/components/user-avatar"
 import { useWebDashboardContext } from "@/components/web-dashboard-guard"
 import { DashboardShell } from "../_components/dashboard-shell"
-
-const profileTabs = [
-  { label: "资料", meta: "基础信息" },
-  { label: "偏好", meta: "聊天习惯" },
-  { label: "隐私", meta: "数据边界" },
-  { label: "通知", meta: "提醒设置" },
-  { label: "安全", meta: "账号状态" },
-]
 
 const preferences = [
   { label: "回复语气", value: "直接但温柔", icon: MessageCircle },
@@ -45,12 +35,6 @@ const privacyItems = [
   { label: "长期记忆", value: "开启，需确认", icon: Brain },
   { label: "角色共享", value: "仅授权伴侣", icon: LockKeyhole },
   { label: "安全边界", value: "严格模式", icon: ShieldCheck },
-]
-
-const activity = [
-  "资料最后更新于",
-  "最近登录时间",
-  "当前会话有效期至",
 ]
 
 const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
@@ -139,11 +123,6 @@ export default function ProfilePage() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
   const [avatarUploadMessage, setAvatarUploadMessage] = useState<string | null>(null)
-  const profileStats = [
-    { label: "角色", value: String(profile.roles.length), icon: Heart },
-    { label: "会话", value: session.app.toUpperCase(), icon: Brain },
-    { label: "状态", value: formatStatus(profile.status), icon: ShieldCheck },
-  ]
   const accountChecks = [
     { label: "账号资料", done: Boolean(profile.name && profile.email) },
     { label: "账号状态", done: profile.status === "active" },
@@ -151,11 +130,6 @@ export default function ProfilePage() {
     { label: "头像形象", done: Boolean(profile.avatarKey) },
   ]
   const incompleteCount = accountChecks.filter((item) => !item.done).length
-  const profileActivity = [
-    `${activity[0]} ${formatDateTime(profile.updatedAtMs)}`,
-    `${activity[1]} ${formatDateTime(profile.lastLoginAtMs)}`,
-    `${activity[2]} ${formatDateTime(session.expiresAtMs)}`,
-  ]
 
   async function handleRefreshProfile() {
     setIsRefreshing(true)
@@ -203,335 +177,197 @@ export default function ProfilePage() {
   return (
     <DashboardShell title="个人中心">
       <main className="min-h-[calc(100vh-4rem)] bg-slate-50/70">
-        <section className="bg-white px-5 pt-5 lg:px-8">
-          <div className="mx-auto w-full max-w-3xl border-b border-slate-200 pb-5">
-            <div className="grid gap-5">
-              <div className="flex min-w-0 gap-4">
-                <div className="hidden size-11 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 sm:flex">
-                  <UserRound className="size-5" />
-                </div>
-
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2 text-[11px] font-medium text-slate-400">
-                    <span>个人中心</span>
-                    <span className="h-px w-8 bg-slate-200" />
-                    <span>Profile</span>
-                  </div>
-                  <p className="mt-2 max-w-xl text-[15px] font-normal leading-7 text-slate-600">
-                    管理你的资料、聊天偏好、记忆权限和账号安全，让 AI 伴侣更懂你，也更有边界。
-                  </p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-slate-100 px-2.5 text-[11px] font-medium text-slate-500">
-                      <BadgeCheck className="size-3.5" />
-                      {formatStatus(profile.status)}
-                    </span>
-                    <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-slate-100 px-2.5 text-[11px] font-medium text-slate-500">
-                      <ShieldCheck className="size-3.5" />
-                      {session.app.toUpperCase()} 会话
-                    </span>
-                    <span className="inline-flex h-7 items-center gap-1.5 rounded-full bg-slate-100 px-2.5 text-[11px] font-medium text-slate-500">
-                      <Sparkles className="size-3.5" />
-                      {profile.roles.length} 个角色
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-3 border-t border-slate-200 pt-3">
-                {profileStats.map((item) => {
-                  const Icon = item.icon
-
-                  return (
-                    <div className="rounded-xl bg-slate-50/80 p-3" key={item.label}>
-                      <div className="mb-2 flex size-6 items-center justify-center rounded-lg bg-slate-100 text-slate-400">
-                        <Icon className="size-3.5" />
-                      </div>
-                      <p className="text-[10px] font-medium text-slate-400">{item.label}</p>
-                      <p className="mt-1 text-sm font-medium leading-none text-slate-600">{item.value}</p>
-                    </div>
-                  )
-                })}
-              </div>
+        <section className="border-b border-slate-200 bg-white">
+          <div className="mx-auto flex max-w-[90rem] flex-col gap-5 px-5 py-6 lg:px-8 lg:py-7 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-medium text-slate-400">ACCOUNT</p>
+              <h1 className="mt-2 text-2xl font-semibold text-slate-950">个人中心</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">查看账户资料、当前偏好、隐私边界与会话状态。</p>
             </div>
-          </div>
-        </section>
-
-        <section className="px-5 py-5 lg:px-8">
-          <div className="mx-auto flex w-full max-w-3xl flex-col gap-3">
-            <label className="flex h-9 min-w-0 items-center gap-2 rounded-xl bg-slate-50/80 px-2.5 ring-1 ring-inset ring-slate-200/70 transition-colors focus-within:bg-white">
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-md text-slate-500">
-                <Search className="size-3.5" />
-              </span>
-              <input
-                aria-label="搜索个人中心设置"
-                className="h-8 min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-950 outline-none placeholder:text-slate-400"
-                placeholder="搜索资料、隐私或偏好"
-              />
-            </label>
-
-            <div className="grid min-w-0 gap-1">
-              {profileTabs.map((tab, index) => (
-                <button
-                  className={
-                    index === 0
-                      ? "relative flex h-8 items-center rounded-lg bg-slate-100 px-3 text-xs font-semibold text-slate-950 after:absolute after:inset-x-3 after:bottom-1 after:h-px after:bg-slate-400"
-                      : "flex h-8 items-center rounded-lg px-3 text-xs font-medium text-slate-500 transition-colors hover:bg-slate-50 hover:text-slate-900"
-                  }
-                  key={tab.label}
-                  title={tab.meta}
-                  type="button"
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
             <button
-              className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+              aria-label="刷新资料"
+              className="flex size-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
               disabled={isRefreshing}
               onClick={() => {
                 void handleRefreshProfile()
               }}
+              title={isRefreshing ? "同步中" : "刷新资料"}
               type="button"
             >
               <RefreshCw className={isRefreshing ? "size-4 animate-spin" : "size-4"} />
-              {isRefreshing ? "同步中" : "刷新资料"}
             </button>
           </div>
+        </section>
 
-          <div className="mx-auto mt-5 grid w-full max-w-3xl gap-5">
-            <section className="grid gap-5">
-              <article className="flex min-h-0 flex-col rounded-2xl bg-white p-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex min-w-0 items-center gap-4">
-                    <UserAvatar user={profile} size="lg" />
-                    <div className="min-w-0">
-                      <p className="text-xl font-semibold tracking-tight text-slate-950">{profile.name}</p>
-                      <p className="mt-1 text-sm text-slate-500">{profile.email}</p>
-                      <div className="mt-3 flex flex-wrap gap-1.5">
-                        {profile.roles.map((role) => (
-                          <span className="inline-flex h-6 items-center rounded-full bg-slate-100 px-2 text-[11px] font-medium text-slate-600" key={role}>
-                            {formatRole(role)}
-                          </span>
-                        ))}
-                        <span className="inline-flex h-6 items-center rounded-full bg-slate-100 px-2 text-[11px] font-medium text-slate-600">
-                          {profile.avatarKey ? "头像已同步" : "未设置头像"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <span className="hidden rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-medium text-emerald-700 sm:inline-flex">
-                    {profile.status === "active" ? "可用" : formatStatus(profile.status)}
+        <section className="mx-auto grid max-w-[90rem] gap-8 px-5 py-8 lg:px-8 xl:grid-cols-[18rem_minmax(0,1fr)] xl:items-start">
+          <aside className="xl:sticky xl:top-20">
+            <section className="border border-slate-200 bg-white p-5">
+              <div className="flex items-start gap-4">
+                <UserAvatar user={profile} size="lg" />
+                <div className="min-w-0 pt-1">
+                  <p className="truncate text-lg font-semibold text-slate-950">{profile.name}</p>
+                  <p className="mt-1 truncate text-sm text-slate-500">{profile.email}</p>
+                  <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-700">
+                    <BadgeCheck className="size-3.5" />
+                    {formatStatus(profile.status)}
                   </span>
                 </div>
+              </div>
 
-                <div className="mt-5 rounded-xl bg-slate-50/80 p-3">
-                  <p className="flex items-center gap-2 text-xs font-medium text-slate-400">
-                    <ImageUp className="size-3.5" />
-                    头像设置
-                  </p>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
-                    支持 JPG、PNG、WebP，文件不超过 2MB。
-                  </p>
-                  <label className="mt-3 inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50">
-                    <input
-                      accept="image/jpeg,image/png,image/webp"
-                      className="sr-only"
-                      disabled={isUploadingAvatar}
-                      onChange={handleAvatarFileChange}
-                      type="file"
-                    />
-                    <ImageUp className="size-4" />
-                    {isUploadingAvatar ? "上传中" : profile.avatarKey ? "更换头像" : "上传头像"}
-                  </label>
-                  {avatarUploadMessage ? (
-                    <p className="mt-2 text-xs leading-5 text-slate-500">{avatarUploadMessage}</p>
-                  ) : null}
+              <div className="mt-6 border-y border-slate-100 py-5">
+                <p className="text-xs font-medium text-slate-400">头像</p>
+                <label className="mt-3 inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md border border-slate-200 px-3 text-sm font-medium text-slate-700 hover:bg-slate-50">
+                  <input
+                    accept="image/jpeg,image/png,image/webp"
+                    className="sr-only"
+                    disabled={isUploadingAvatar}
+                    onChange={handleAvatarFileChange}
+                    type="file"
+                  />
+                  <ImageUp className="size-4" />
+                  {isUploadingAvatar ? "上传中" : profile.avatarKey ? "更换头像" : "上传头像"}
+                </label>
+                <p className="mt-2 text-xs leading-5 text-slate-400">JPG、PNG、WebP，文件不超过 2MB。</p>
+                {avatarUploadMessage ? <p className="mt-2 text-xs leading-5 text-slate-600">{avatarUploadMessage}</p> : null}
+              </div>
+
+              <div className="py-5">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm font-semibold text-slate-800">账户完整度</p>
+                  <span className="text-xs text-slate-400">{incompleteCount === 0 ? "已完成" : `待补 ${incompleteCount} 项`}</span>
                 </div>
-
-                <div className="mt-5 grid gap-3 border-t border-slate-200 pt-4">
-                  <div className="rounded-xl bg-slate-50/80 p-3">
-                    <p className="text-[10px] font-medium text-slate-400">加入时间</p>
-                    <p className="mt-1 text-sm font-medium text-slate-700">{formatDate(profile.createdAtMs)}</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-50/80 p-3">
-                    <p className="text-[10px] font-medium text-slate-400">用户 ID</p>
-                    <p className="mt-1 truncate text-sm font-medium text-slate-700" title={profile.id}>{profile.id}</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-50/80 p-3">
-                    <p className="text-[10px] font-medium text-slate-400">同步</p>
-                    <p className="mt-1 text-sm font-medium text-slate-700">{formatRelativeTime(profile.updatedAtMs)}</p>
-                  </div>
+                <div className="mt-3 grid gap-2">
+                  {accountChecks.map((item) => (
+                    <div className="flex items-center gap-2" key={item.label}>
+                      <span className={item.done ? "text-emerald-600" : "text-slate-300"}>
+                        <CheckCircle2 className="size-4" />
+                      </span>
+                      <span className="text-sm text-slate-600">{item.label}</span>
+                    </div>
+                  ))}
                 </div>
-              </article>
+              </div>
 
-              <article className="rounded-2xl bg-white p-5">
-                <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3">
-                  <p className="flex items-center gap-2 text-sm font-semibold text-slate-950">
-                    <MessageCircle className="size-4 text-slate-500" />
-                    聊天偏好
-                  </p>
-                  <span className="text-[11px] font-medium text-slate-400">Preferences</span>
+              <div className="border-t border-slate-100 pt-5">
+                <p className="flex items-center gap-2 text-xs text-slate-400"><Clock3 className="size-3.5" /> 最近同步</p>
+                <p className="mt-2 text-sm text-slate-600">{formatRelativeTime(profile.updatedAtMs)}</p>
+              </div>
+            </section>
+          </aside>
+
+          <div className="min-w-0 space-y-8">
+            <section className="border border-slate-200 bg-white" aria-labelledby="account-details-heading">
+              <div className="flex items-center gap-2 border-b border-slate-200 px-5 py-4 sm:px-6">
+                <UserRound className="size-4 text-slate-400" />
+                <h2 className="text-sm font-semibold text-slate-900" id="account-details-heading">账户资料</h2>
+              </div>
+              <dl className="divide-y divide-slate-100 px-5 sm:px-6">
+                <div className="grid gap-1 py-4 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-center sm:gap-6">
+                  <dt className="text-sm text-slate-400">登录邮箱</dt>
+                  <dd className="truncate text-sm font-medium text-slate-700">{profile.email}</dd>
                 </div>
+                <div className="grid gap-1 py-4 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-center sm:gap-6">
+                  <dt className="text-sm text-slate-400">账户角色</dt>
+                  <dd className="flex flex-wrap gap-1.5">
+                    {profile.roles.map((role) => <span className="rounded-full bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-600" key={role}>{formatRole(role)}</span>)}
+                  </dd>
+                </div>
+                <div className="grid gap-1 py-4 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-center sm:gap-6">
+                  <dt className="text-sm text-slate-400">加入时间</dt>
+                  <dd className="text-sm font-medium text-slate-700">{formatDate(profile.createdAtMs)}</dd>
+                </div>
+                <div className="grid gap-1 py-4 sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-center sm:gap-6">
+                  <dt className="text-sm text-slate-400">用户 ID</dt>
+                  <dd className="truncate text-sm font-medium text-slate-700" title={profile.id}>{profile.id}</dd>
+                </div>
+              </dl>
+            </section>
 
-                <div className="grid gap-2">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <section className="border border-slate-200 bg-white" aria-labelledby="preferences-heading">
+                <div className="flex items-center gap-2 border-b border-slate-200 px-5 py-4">
+                  <MessageCircle className="size-4 text-slate-400" />
+                  <h2 className="text-sm font-semibold text-slate-900" id="preferences-heading">聊天偏好</h2>
+                </div>
+                <dl className="divide-y divide-slate-100 px-5">
                   {preferences.map((item) => {
                     const Icon = item.icon
 
                     return (
-                      <div className="border-t border-slate-100 py-3 first:border-t-0 sm:first:border-t sm:odd:pr-3" key={item.label}>
-                        <p className="flex items-center gap-2 text-xs font-medium text-slate-400">
-                          <Icon className="size-3.5" />
-                          {item.label}
-                        </p>
-                        <p className="mt-1 text-sm font-medium text-slate-800">{item.value}</p>
+                      <div className="flex items-center gap-3 py-4" key={item.label}>
+                        <Icon className="size-4 shrink-0 text-slate-400" />
+                        <dt className="min-w-0 flex-1 text-sm text-slate-500">{item.label}</dt>
+                        <dd className="text-right text-sm font-medium text-slate-700">{item.value}</dd>
                       </div>
                     )
                   })}
-                </div>
-              </article>
+                </dl>
+              </section>
 
-              <article className="rounded-2xl bg-white p-5">
-                <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3">
-                  <p className="flex items-center gap-2 text-sm font-semibold text-slate-950">
-                    <LockKeyhole className="size-4 text-slate-500" />
-                    隐私与记忆
-                  </p>
-                  <span className="text-[11px] font-medium text-slate-400">Privacy</span>
+              <section className="border border-slate-200 bg-white" aria-labelledby="privacy-heading">
+                <div className="flex items-center gap-2 border-b border-slate-200 px-5 py-4">
+                  <LockKeyhole className="size-4 text-slate-400" />
+                  <h2 className="text-sm font-semibold text-slate-900" id="privacy-heading">隐私与记忆</h2>
                 </div>
-
-                <div className="grid gap-3">
+                <dl className="divide-y divide-slate-100 px-5">
                   {privacyItems.map((item) => {
                     const Icon = item.icon
 
                     return (
-                      <div className="flex items-center gap-3 border-t border-slate-100 py-2 first:border-t-0" key={item.label}>
-                        <Icon className="size-4 shrink-0 text-slate-500" />
-                        <span className="min-w-0 flex-1 text-sm font-medium text-slate-700">{item.label}</span>
-                        <span className="text-sm text-slate-500">{item.value}</span>
+                      <div className="flex items-center gap-3 py-4" key={item.label}>
+                        <Icon className="size-4 shrink-0 text-slate-400" />
+                        <dt className="min-w-0 flex-1 text-sm text-slate-500">{item.label}</dt>
+                        <dd className="text-right text-sm font-medium text-slate-700">{item.value}</dd>
                       </div>
                     )
                   })}
-                </div>
-              </article>
+                </dl>
+              </section>
+            </div>
 
-              <article className="rounded-2xl bg-white p-5">
-                <p className="flex items-center gap-2 text-sm font-semibold text-slate-950">
-                  <Bell className="size-4 text-slate-500" />
-                  通知
-                </p>
-                <div className="mt-4 space-y-3">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <section className="border border-slate-200 bg-white" aria-labelledby="notification-heading">
+                <div className="flex items-center gap-2 border-b border-slate-200 px-5 py-4">
+                  <Bell className="size-4 text-slate-400" />
+                  <h2 className="text-sm font-semibold text-slate-900" id="notification-heading">通知状态</h2>
+                </div>
+                <div className="divide-y divide-slate-100 px-5">
                   {["重要聊天提醒", "记忆确认提醒", "伴侣动态提醒"].map((item, index) => (
-                    <div className="flex items-center justify-between gap-3 border-t border-slate-100 pt-3 first:border-t-0 first:pt-0" key={item}>
-                      <span className="text-sm font-medium text-slate-700">{item}</span>
-                      <span
-                        className={
-                          index === 2
-                            ? "h-5 w-9 rounded-full bg-slate-200 p-0.5"
-                            : "h-5 w-9 rounded-full bg-slate-950 p-0.5"
-                        }
-                      >
-                        <span
-                          className={
-                            index === 2
-                              ? "block size-4 rounded-full bg-white"
-                              : "ml-auto block size-4 rounded-full bg-white"
-                          }
-                        />
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </article>
-
-              <article className="rounded-2xl bg-white p-5">
-                <p className="flex items-center gap-2 text-sm font-semibold text-slate-950">
-                  <KeyRound className="size-4 text-slate-500" />
-                  安全
-                </p>
-                <div className="mt-4 space-y-3">
-                  <div className="border-t border-slate-100 pt-3 first:border-t-0 first:pt-0">
-                    <p className="text-xs font-medium text-slate-400">登录方式</p>
-                    <p className="mt-1 text-sm font-medium text-slate-800">{profile.email}</p>
-                  </div>
-                  <div className="border-t border-slate-100 pt-3">
-                    <p className="text-xs font-medium text-slate-400">会话状态</p>
-                    <p className="mt-1 text-sm font-medium text-slate-800">
-                      {session.sessionId.slice(0, 8)} · {formatDateTime(session.expiresAtMs)}
-                    </p>
-                  </div>
-                  <button
-                    className="mt-2 inline-flex h-9 w-full items-center justify-center rounded-full border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                    type="button"
-                  >
-                    管理安全设置
-                  </button>
-                </div>
-              </article>
-            </section>
-
-            <section className="grid gap-5">
-              <section className="rounded-2xl bg-white p-4">
-                <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
-                  <span className="flex size-9 items-center justify-center rounded-xl bg-slate-950 text-white">
-                    <CheckCircle2 className="size-4" />
-                  </span>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-950">账号完整度</p>
-                    <p className="mt-1 text-xs leading-5 text-slate-400">
-                      {incompleteCount === 0 ? "全部核心资料已同步。" : `还有 ${incompleteCount} 项可以完善。`}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid gap-2">
-                  {accountChecks.map((item) => (
-                    <div className="flex items-center gap-3 border-t border-slate-100 py-2 first:border-t-0 first:pt-0" key={item.label}>
-                      <span
-                        className={
-                          item.done
-                            ? "flex size-6 items-center justify-center rounded-lg bg-slate-950 text-white"
-                            : "flex size-6 items-center justify-center rounded-lg bg-slate-100 text-slate-400"
-                        }
-                      >
-                        {item.done ? <CheckCircle2 className="size-3.5" /> : <Sparkles className="size-3.5" />}
-                      </span>
-                      <span className="min-w-0 flex-1 text-sm font-medium text-slate-700">{item.label}</span>
-                      <span className="text-[11px] font-medium text-slate-400">
-                        {item.done ? "完成" : "待完善"}
+                    <div className="flex items-center justify-between gap-4 py-4" key={item}>
+                      <span className="text-sm text-slate-600">{item}</span>
+                      <span className={index === 2 ? "rounded-full bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-500" : "rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-700"}>
+                        {index === 2 ? "未开启" : "已开启"}
                       </span>
                     </div>
                   ))}
                 </div>
               </section>
 
-              <section className="rounded-2xl bg-white p-4">
-                <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
-                  <p className="flex items-center gap-2 text-sm font-semibold text-slate-950">
-                    <Clock3 className="size-4 text-slate-500" />
-                    最近同步
-                  </p>
-                  <span className="text-[11px] font-medium text-slate-400">Today</span>
+              <section className="border border-slate-200 bg-white" aria-labelledby="security-heading">
+                <div className="flex items-center gap-2 border-b border-slate-200 px-5 py-4">
+                  <KeyRound className="size-4 text-slate-400" />
+                  <h2 className="text-sm font-semibold text-slate-900" id="security-heading">会话与安全</h2>
                 </div>
-
-                <div className="mt-4 grid gap-2">
-                  {profileActivity.map((item) => (
-                    <div className="border-t border-slate-100 py-3 first:border-t-0 first:pt-0" key={item}>
-                      <p className="text-sm leading-6 text-slate-600">{item}</p>
-                    </div>
-                  ))}
-                </div>
+                <dl className="divide-y divide-slate-100 px-5">
+                  <div className="py-4">
+                    <dt className="text-xs font-medium text-slate-400">最近登录</dt>
+                    <dd className="mt-1 text-sm font-medium text-slate-700">{formatDateTime(profile.lastLoginAtMs)}</dd>
+                  </div>
+                  <div className="py-4">
+                    <dt className="text-xs font-medium text-slate-400">当前会话有效期</dt>
+                    <dd className="mt-1 text-sm font-medium text-slate-700">{formatDateTime(session.expiresAtMs)}</dd>
+                  </div>
+                  <div className="py-4">
+                    <dt className="text-xs font-medium text-slate-400">会话标识</dt>
+                    <dd className="mt-1 text-sm font-medium text-slate-700">{session.sessionId.slice(0, 8)}</dd>
+                  </div>
+                </dl>
               </section>
+            </div>
 
-              <section className="rounded-2xl border border-slate-200 bg-white p-4">
-                <p className="flex items-center gap-2 text-sm font-semibold text-slate-950">
-                  <ShieldCheck className="size-4 text-slate-500" />
-                  数据边界
-                </p>
-                <p className="mt-3 text-sm leading-6 text-slate-600">
-                  伴侣只能使用你授权的偏好、边界和已确认记忆。待确认记忆不会自动进入长期上下文。
-                </p>
-              </section>
+            <section className="border border-slate-200 bg-white px-5 py-5 sm:px-6">
+              <p className="flex items-center gap-2 text-sm font-semibold text-slate-900"><ShieldCheck className="size-4 text-slate-400" /> 数据边界</p>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">伴侣只能使用你授权的偏好、边界和已确认记忆。待确认记忆不会自动进入长期上下文。</p>
             </section>
           </div>
         </section>

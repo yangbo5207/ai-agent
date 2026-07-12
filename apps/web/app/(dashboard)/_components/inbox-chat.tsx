@@ -12,15 +12,10 @@ import type {
 } from "@repo/contracts"
 import {
   Clock3,
-  Heart,
-  MessageCircle,
-  PenLine,
+  PanelLeftOpen,
   RadioTower,
-  ShieldCheck,
-  Sparkles,
   ThumbsDown,
   ThumbsUp,
-  UserRound,
 } from "lucide-react"
 import {
   Conversation,
@@ -60,6 +55,7 @@ type ChatConversation = InboxChatRequest["conversation"]
 type InboxChatProps = {
   conversation: ChatConversation
   onConversationUpdated?: () => void
+  onOpenConversationList?: () => void
 }
 
 type InboxChatInnerProps = InboxChatProps & {
@@ -194,17 +190,14 @@ function TypingBubble({ conversation }: { conversation: ChatConversation }) {
   return (
     <div className="flex w-full items-start gap-3">
       <AgentAvatar
-        className="mt-6 size-9 rounded-full border-violet-200 bg-violet-50 text-xs text-violet-700"
-        fallbackClassName="bg-violet-50 text-violet-700"
+        className="mt-5 size-8 rounded-md bg-slate-100 text-xs text-slate-700"
+        fallbackClassName="bg-slate-100 text-slate-700"
         imageKey={conversation.imageKey}
         name={conversation.name}
       />
-      <div className="flex min-w-0 max-w-[min(34rem,82%)] flex-col gap-1.5">
-        <div className="flex items-center gap-2 text-xs font-medium text-violet-700">
-          <Sparkles className="size-3.5" />
-          <span>AI Assistant</span>
-        </div>
-        <div className="rounded-xl rounded-tl-sm border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-800">
+      <div className="flex min-w-0 max-w-[min(38rem,82%)] flex-col gap-1.5">
+        <span className="text-xs font-medium text-slate-500">{conversation.name}</span>
+        <div className="rounded-md border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-800">
           <div className="flex items-center gap-2.5">
             <span className="text-slate-500">正在回复</span>
             <div className="flex items-center gap-1">
@@ -268,7 +261,7 @@ function InboxChatErrorPanel({ conversation, error }: { conversation: ChatConver
   )
 }
 
-function InboxChatInner({ conversation, serverConversation, onConversationUpdated }: InboxChatInnerProps) {
+function InboxChatInner({ conversation, serverConversation, onConversationUpdated, onOpenConversationList }: InboxChatInnerProps) {
   const { profile } = useWebDashboardContext()
   const queryClient = useQueryClient()
   const [draftMessage, setDraftMessage] = useState("")
@@ -544,96 +537,46 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
   }, [hasPendingConversationUpdate, onConversationUpdated, status])
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.08),transparent_32rem),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)]">
-      <div className="border-b bg-white/90 px-4 py-4 backdrop-blur sm:px-6">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex min-w-0 items-center gap-4">
-            <span className="relative shrink-0">
-              <AgentAvatar
-                className="size-14 rounded-2xl bg-slate-950 text-base text-white"
-                fallbackClassName="bg-slate-950 text-white"
-                imageKey={conversation.imageKey}
-                name={conversation.name}
-              />
-              <span className="absolute -right-0.5 -top-0.5 size-3.5 rounded-full border-2 border-white bg-emerald-500" />
-            </span>
-            <div className="min-w-0">
-              <div className="flex min-w-0 items-center gap-2">
-                <h2 className="truncate text-xl font-semibold tracking-tight text-slate-950 sm:text-2xl">
-                  {conversation.name}
-                </h2>
-                <span className="inline-flex h-5 shrink-0 items-center rounded-full border border-emerald-200 bg-emerald-50 px-2 text-[11px] font-medium text-emerald-700">
-                  {conversation.status}
-                </span>
-              </div>
-              <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1.5">
-                  <UserRound className="size-3.5" />
-                  AI 电子伴侣
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Clock3 className="size-3.5" />
-                  {conversation.lastActive}
-                </span>
-                <span className="truncate">{conversation.handle}</span>
-              </div>
-              <p className="mt-2 line-clamp-1 text-sm text-slate-600">
-                {conversation.headline}
-              </p>
+    <section className="flex min-h-0 flex-1 flex-col bg-slate-50/70">
+      <div className="flex min-h-16 items-center justify-between gap-4 border-b bg-white px-4 py-3 sm:px-6">
+        <div className="flex min-w-0 items-center gap-3">
+          {onOpenConversationList ? (
+            <button
+              aria-label="选择对话"
+              className="flex size-8 shrink-0 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 lg:hidden"
+              onClick={onOpenConversationList}
+              title="选择对话"
+              type="button"
+            >
+              <PanelLeftOpen className="size-4" />
+            </button>
+          ) : null}
+          <AgentAvatar
+            className="size-9 rounded-md bg-slate-950 text-xs text-white"
+            fallbackClassName="bg-slate-950 text-white"
+            imageKey={conversation.imageKey}
+            name={conversation.name}
+          />
+          <div className="min-w-0">
+            <div className="flex min-w-0 items-center gap-2">
+              <h2 className="truncate text-base font-semibold text-slate-900">{conversation.name}</h2>
+              <span className="hidden shrink-0 text-xs text-slate-400 sm:inline">{conversation.handle}</span>
             </div>
-          </div>
-
-          <div className="grid grid-cols-3 overflow-hidden rounded-2xl border border-slate-200 bg-white xl:min-w-96">
-            <div className="border-r border-slate-200 px-3 py-2.5">
-              <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-                <Heart className="size-3.5 text-rose-600" />
-                心动值
-              </div>
-              <p className="mt-1 text-sm font-semibold text-slate-950">{conversation.chemistry}</p>
-            </div>
-            <div className="border-r border-slate-200 px-3 py-2.5">
-              <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-                <Sparkles className="size-3.5 text-violet-600" />
-                共同点
-              </div>
-              <p className="mt-1 truncate text-sm font-semibold text-slate-950">{conversation.topic}</p>
-            </div>
-            <div className="px-3 py-2.5">
-              <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
-                <ShieldCheck className="size-3.5 text-emerald-600" />
-                节奏
-              </div>
-              <p className="mt-1 truncate text-sm font-semibold text-slate-950">{conversation.rhythm}</p>
-            </div>
+            <p className="mt-0.5 truncate text-xs text-slate-500">{conversation.headline}</p>
           </div>
         </div>
-
-        <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Profile note</p>
-              <p className="mt-1 line-clamp-2 text-sm leading-6 whitespace-break-spaces text-slate-700">
-                {conversation.profileNote}
-              </p>
-            </div>
-            <div className="flex shrink-0 items-center gap-2">
-              <span className="inline-flex h-7 items-center rounded-full border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600">
-                {conversation.relationship}
-              </span>
-              <span className="inline-flex h-7 items-center rounded-full border border-violet-200 bg-violet-50 px-3 text-xs font-medium text-violet-700">
-                Ready
-              </span>
-            </div>
-          </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="hidden rounded-full bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-600 sm:inline-flex">{conversation.relationship}</span>
+          <span className="rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-700">{conversation.status}</span>
         </div>
       </div>
 
       <Conversation className="min-h-0">
-        <ConversationContent className="mx-auto w-full max-w-4xl gap-6 px-4 py-6 sm:px-6">
+        <ConversationContent className="mx-auto w-full max-w-3xl gap-6 px-4 py-7 sm:px-6">
           <div className="flex items-center justify-center">
             {nextCursor ? (
               <button
-                className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={isLoadingMoreHistory}
                 onClick={() => {
                   void loadMoreHistory()
@@ -644,10 +587,7 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
                 {isLoadingMoreHistory ? "正在加载历史" : "加载更早消息"}
               </button>
             ) : (
-              <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1.5 text-xs font-medium text-slate-600">
-                <Sparkles className="size-3.5 text-violet-600" />
-                Assistant is using saved chat memory
-              </div>
+              <span className="text-xs text-slate-400">更早的对话会显示在这里</span>
             )}
           </div>
 
@@ -678,8 +618,8 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
               >
                 {!isUser ? (
                   <AgentAvatar
-                    className="mt-6 size-9 rounded-full border-violet-200 bg-violet-50 text-xs text-violet-700"
-                    fallbackClassName="bg-violet-50 text-violet-700"
+                    className="mt-5 size-8 rounded-md bg-slate-100 text-xs text-slate-700"
+                    fallbackClassName="bg-slate-100 text-slate-700"
                     imageKey={conversation.imageKey}
                     name={conversation.name}
                   />
@@ -687,26 +627,25 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
 
                 <div
                   className={cn(
-                    "flex min-w-0 max-w-[min(34rem,82%)] flex-col gap-1.5",
+                    "flex min-w-0 max-w-[min(38rem,82%)] flex-col gap-1.5",
                     isUser ? "items-end" : "items-start",
                   )}
                 >
                   <div
                     className={cn(
                       "flex items-center gap-2 text-xs font-medium",
-                      isUser ? "text-slate-500" : "text-violet-700",
+                      isUser ? "text-slate-500" : "text-slate-500",
                     )}
                   >
-                    {!isUser ? <Sparkles className="size-3.5" /> : null}
-                    <span>{isUser ? "You" : "AI Assistant"}</span>
+                    <span>{isUser ? "你" : conversation.name}</span>
                   </div>
 
                   <div
                     className={cn(
                       "relative border px-4 py-3 text-sm leading-6",
                       isUser
-                        ? "rounded-xl rounded-tr-sm border-slate-900 bg-slate-950 text-white"
-                        : "rounded-xl rounded-tl-sm border-slate-200 bg-white text-slate-800",
+                        ? "rounded-md border-slate-900 bg-slate-950 text-white"
+                        : "rounded-md border-slate-200 bg-white text-slate-800",
                     )}
                   >
                     <MessageResponse
@@ -724,7 +663,7 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
                       <button
                         aria-label="这条回复有帮助"
                         className={cn(
-                          "inline-flex size-7 items-center justify-center rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+                          "inline-flex size-7 items-center justify-center rounded-md border transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                           messageFeedback?.rating === "positive"
                             ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                             : "border-slate-200 bg-white/70 text-slate-400 hover:border-emerald-200 hover:text-emerald-700",
@@ -733,6 +672,7 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
                         onClick={() => {
                           feedbackMutation.mutate({ messageId: message.id, rating: "positive" })
                         }}
+                        title="有帮助"
                         type="button"
                       >
                         <ThumbsUp className="size-3.5" />
@@ -740,7 +680,7 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
                       <button
                         aria-label="这条回复不合适"
                         className={cn(
-                          "inline-flex size-7 items-center justify-center rounded-full border transition-colors disabled:cursor-not-allowed disabled:opacity-60",
+                          "inline-flex size-7 items-center justify-center rounded-md border transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                           messageFeedback?.rating === "negative"
                             ? "border-rose-200 bg-rose-50 text-rose-700"
                             : "border-slate-200 bg-white/70 text-slate-400 hover:border-rose-200 hover:text-rose-700",
@@ -749,6 +689,7 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
                         onClick={() => {
                           feedbackMutation.mutate({ messageId: message.id, rating: "negative" })
                         }}
+                        title="不合适"
                         type="button"
                       >
                         <ThumbsDown className="size-3.5" />
@@ -780,9 +721,9 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
         <ConversationScrollButton />
       </Conversation>
 
-      <div className="border-t bg-white/90 px-4 py-4 backdrop-blur sm:px-6">
+      <div className="border-t bg-white px-4 py-4 sm:px-6">
         <PromptInput
-          className="mx-auto max-w-4xl"
+          className="mx-auto max-w-3xl border border-slate-200 bg-white"
           onSubmit={(message) => {
             const text = message.text.trim()
 
@@ -795,11 +736,10 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
           }}
         >
           <PromptInputHeader className="border-b bg-slate-50/70 px-3 py-2">
-            <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto">
-              <span className="shrink-0 text-xs font-medium text-muted-foreground">快捷输入</span>
+            <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto">
               {quickPrompts.map((prompt) => (
                 <button
-                  className="h-7 shrink-0 rounded-full border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="h-7 shrink-0 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={isSending}
                   key={prompt}
                   onClick={() => setDraftMessage(prompt)}
@@ -831,12 +771,12 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
                 >
                   <PromptInputSelectTrigger
                     aria-label="选择本次聊天使用的 LLM"
-                    className="h-7 max-w-56 rounded-full border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50 data-placeholder:text-slate-500"
+                    className="h-7 max-w-56 rounded-md border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50 data-placeholder:text-slate-500"
                     size="sm"
                   >
                     <PromptInputSelectValue placeholder="平台默认" />
                   </PromptInputSelectTrigger>
-                  <PromptInputSelectContent className="min-w-56 rounded-xl border border-slate-200 shadow-none">
+                  <PromptInputSelectContent className="min-w-56 rounded-md border border-slate-200 shadow-none">
                     <PromptInputSelectItem value="platform-default">
                       平台默认
                     </PromptInputSelectItem>
@@ -848,17 +788,9 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
                   </PromptInputSelectContent>
                 </PromptInputSelect>
               </label>
-              <span className="flex items-center gap-1.5">
-                <MessageCircle className="size-3.5" />
-                引用当前聊天
-              </span>
-              <span className="hidden items-center gap-1.5 sm:flex">
-                <PenLine className="size-3.5" />
-                Enter 发送
-              </span>
             </PromptInputTools>
             <PromptInputSubmit
-              className="rounded-full"
+              className="rounded-md"
               disabled={isSending}
               onStop={stop}
               status={status}
@@ -870,7 +802,7 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
   )
 }
 
-export function InboxChat({ conversation, onConversationUpdated }: InboxChatProps) {
+export function InboxChat({ conversation, onConversationUpdated, onOpenConversationList }: InboxChatProps) {
   const queryClient = useQueryClient()
   const conversationQuery = useQuery({
     queryKey: ["agent-conversation", conversation.id],
@@ -890,6 +822,7 @@ export function InboxChat({ conversation, onConversationUpdated }: InboxChatProp
     <InboxChatInner
       conversation={conversation}
       key={conversationQuery.data.conversationId}
+      onOpenConversationList={onOpenConversationList}
       onConversationUpdated={() => {
         void queryClient.invalidateQueries({ queryKey: ["agent-conversation", conversation.id] })
         onConversationUpdated?.()

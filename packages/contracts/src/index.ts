@@ -200,6 +200,16 @@ export type {
   ImageGenerationProxyResponse,
 } from './image-generation/proxy.contract'
 export {
+  LlmConnectionWireApiSchema,
+  LlmTestConnectionRequestSchema,
+  LlmTestConnectionResponseSchema,
+} from './llm/test-connection.contract'
+export type {
+  LlmConnectionWireApi,
+  LlmTestConnectionRequest,
+  LlmTestConnectionResponse,
+} from './llm/test-connection.contract'
+export {
   HealthResponseSchema,
 } from './system/health.contract'
 export type {

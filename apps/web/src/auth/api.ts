@@ -28,6 +28,8 @@ import type {
   UploadMyAgentCompanionImageResponse,
   UserProfileResponse,
   MyAgentSummaryResponse,
+  LlmTestConnectionRequest,
+  LlmTestConnectionResponse,
   SubmitAgentMessageFeedbackRequest,
   SubmitAgentMessageFeedbackResponse,
   WebGithubAuthUrlResponse,
@@ -78,6 +80,10 @@ export function uploadWebUserAvatar(file: File) {
 
 export function getMyAgentSummary() {
   return http.get<MyAgentSummaryResponse>('/rpc/agent/my/summary')
+}
+
+export function testLlmConnection(input: LlmTestConnectionRequest) {
+  return http.post<LlmTestConnectionResponse, LlmTestConnectionRequest>('/rpc/llm/test-connection', input)
 }
 
 export function getMyAgentInbox() {
