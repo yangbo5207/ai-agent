@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { InboxChatLlmConfigSchema } from '../chat/inbox-chat.contract'
 
 export const CreateMyAgentCompanionRequestSchema = z.object({
   name: z.string().trim().min(1).max(120),
@@ -17,6 +18,27 @@ export const CreateMyAgentCompanionRequestSchema = z.object({
 export const CreateMyAgentCompanionResponseSchema = z.object({
   id: z.string().min(1),
   defaultPrompt: z.string().min(1),
+})
+
+export const GeneratedMyAgentCompanionDraftSchema = z.object({
+  name: z.string().trim().min(1).max(40),
+  headline: z.string().trim().min(1).max(80),
+  description: z.string().trim().min(1).max(500),
+  storyBackground: z.string().trim().min(1).max(1200),
+  personalityPrompt: z.string().trim().min(1).max(800),
+  tonePrompt: z.string().trim().min(1).max(600),
+  guardrailsPrompt: z.string().trim().min(1).max(800),
+  openingMessage: z.string().trim().min(1).max(300),
+  imagePrompt: z.string().trim().min(1).max(1800),
+})
+
+export const GenerateMyAgentCompanionDraftRequestSchema = z.object({
+  brief: z.string().trim().min(1).max(800).optional(),
+  llmConfig: InboxChatLlmConfigSchema.optional(),
+})
+
+export const GenerateMyAgentCompanionDraftResponseSchema = z.object({
+  draft: GeneratedMyAgentCompanionDraftSchema,
 })
 
 export const UpdateMyAgentCompanionRequestSchema = CreateMyAgentCompanionRequestSchema
@@ -199,6 +221,9 @@ export type UpdateAgentMemoryRequest = z.infer<typeof UpdateAgentMemoryRequestSc
 export type UpdateAgentMemoryResponse = z.infer<typeof UpdateAgentMemoryResponseSchema>
 export type CreateMyAgentCompanionRequest = z.infer<typeof CreateMyAgentCompanionRequestSchema>
 export type CreateMyAgentCompanionResponse = z.infer<typeof CreateMyAgentCompanionResponseSchema>
+export type GeneratedMyAgentCompanionDraft = z.infer<typeof GeneratedMyAgentCompanionDraftSchema>
+export type GenerateMyAgentCompanionDraftRequest = z.infer<typeof GenerateMyAgentCompanionDraftRequestSchema>
+export type GenerateMyAgentCompanionDraftResponse = z.infer<typeof GenerateMyAgentCompanionDraftResponseSchema>
 export type UpdateMyAgentCompanionRequest = z.infer<typeof UpdateMyAgentCompanionRequestSchema>
 export type UpdateMyAgentCompanionResponse = z.infer<typeof UpdateMyAgentCompanionResponseSchema>
 export type UploadMyAgentCompanionImageResponse = z.infer<typeof UploadMyAgentCompanionImageResponseSchema>

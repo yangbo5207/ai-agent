@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bot, Brain, Coins, Command, Compass, Heart, ImageIcon, Inbox, MessagesSquare, PlugZap, Sparkles, UserRound } from "lucide-react"
+import { Bot, Brain, Coins, Command, Compass, Heart, ImageIcon, Inbox, MessagesSquare, PlugZap, Puzzle, Sparkles, UserRound } from "lucide-react"
 
 import { useWebDashboardContext } from "@/components/web-dashboard-guard"
 import { NavUser } from "./nav-user"
@@ -54,6 +54,11 @@ const data = {
       title: "记忆库",
       url: "/memories",
       icon: Brain,
+    },
+    {
+      title: "Skills",
+      url: "/skills",
+      icon: Puzzle,
     },
     {
       title: "订阅套餐",

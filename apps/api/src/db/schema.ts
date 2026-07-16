@@ -442,6 +442,204 @@ export const agentGroupChatMessages = sqliteTable(
   ],
 )
 
+export const skillBindings = sqliteTable(
+  'skill_bindings',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    scopeType: text('scope_type').notNull(),
+    scopeId: text('scope_id').notNull(),
+    skillId: text('skill_id').notNull(),
+    skillVersion: text('skill_version'),
+    enabled: integer('enabled').notNull(),
+    createdAtMs: integer('created_at_ms').notNull(),
+    updatedAtMs: integer('updated_at_ms').notNull(),
+  },
+  (table) => [
+    uniqueIndex('idx_skill_bindings_scope_skill_unique')
+      .on(table.userId, table.scopeType, table.scopeId, table.skillId),
+    index('idx_skill_bindings_user_scope').on(table.userId, table.scopeType, table.scopeId),
+  ],
+)
+
+export const skillRuns = sqliteTable(
+  'skill_runs',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    skillId: text('skill_id').notNull(),
+    skillVersion: text('skill_version').notNull(),
+    skillKind: text('skill_kind').notNull(),
+    sessionId: text('session_id'),
+    chatScope: text('chat_scope').notNull(),
+    bindingSource: text('binding_source').notNull(),
+    triggerType: text('trigger_type').notNull(),
+    score: integer('score').notNull(),
+    reason: text('reason').notNull(),
+    status: text('status').notNull(),
+    agentId: text('agent_id'),
+    groupChatId: text('group_chat_id'),
+    conversationId: text('conversation_id'),
+    latencyMs: integer('latency_ms').notNull(),
+    createdAtMs: integer('created_at_ms').notNull(),
+    completedAtMs: integer('completed_at_ms'),
+  },
+  (table) => [
+    index('idx_skill_runs_user_created').on(table.userId, table.createdAtMs, table.id),
+    index('idx_skill_runs_user_skill_created').on(table.userId, table.skillId, table.createdAtMs),
+    index('idx_skill_runs_session_created').on(table.sessionId, table.createdAtMs),
+  ],
+)
+
+export const skillSessions = sqliteTable(
+  'skill_sessions',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    skillId: text('skill_id').notNull(),
+    skillVersion: text('skill_version').notNull(),
+    chatScope: text('chat_scope').notNull(),
+    bindingSource: text('binding_source').notNull(),
+    scopeType: text('scope_type').notNull(),
+    scopeId: text('scope_id').notNull(),
+    status: text('status').notNull(),
+    currentStep: text('current_step').notNull(),
+    stateJson: text('state_json').notNull(),
+    pendingQuestion: text('pending_question'),
+    lastSourceMessageId: text('last_source_message_id'),
+    lastSystemInstruction: text('last_system_instruction'),
+    revision: integer('revision').notNull(),
+    createdAtMs: integer('created_at_ms').notNull(),
+    updatedAtMs: integer('updated_at_ms').notNull(),
+    expiresAtMs: integer('expires_at_ms').notNull(),
+    completedAtMs: integer('completed_at_ms'),
+    cancelledAtMs: integer('cancelled_at_ms'),
+    failedAtMs: integer('failed_at_ms'),
+  },
+  (table) => [
+    uniqueIndex('idx_skill_sessions_one_active_per_scope')
+      .on(table.userId, table.scopeType, table.scopeId)
+      .where(sql`${table.status} in ('active', 'waiting_user')`),
+    index('idx_skill_sessions_user_status_updated').on(table.userId, table.status, table.updatedAtMs, table.id),
+    index('idx_skill_sessions_expiration').on(table.status, table.expiresAtMs),
+  ],
+)
+
+export const skillPermissionGrants = sqliteTable(
+  'skill_permission_grants',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    skillId: text('skill_id').notNull(),
+    skillVersion: text('skill_version').notNull(),
+    permissionCode: text('permission_code').notNull(),
+    scopeType: text('scope_type').notNull(),
+    scopeId: text('scope_id').notNull(),
+    status: text('status').notNull(),
+    grantedAtMs: integer('granted_at_ms').notNull(),
+    revokedAtMs: integer('revoked_at_ms'),
+    updatedAtMs: integer('updated_at_ms').notNull(),
+  },
+  (table) => [
+    uniqueIndex('idx_skill_permission_grants_scope_unique')
+      .on(table.userId, table.skillId, table.permissionCode, table.scopeType, table.scopeId),
+    index('idx_skill_permission_grants_user_status').on(table.userId, table.status, table.updatedAtMs),
+  ],
+)
+
+export const skillToolExecutions = sqliteTable(
+  'skill_tool_executions',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    skillId: text('skill_id').notNull(),
+    skillVersion: text('skill_version').notNull(),
+    toolId: text('tool_id').notNull(),
+    runId: text('run_id'),
+    sourceMessageId: text('source_message_id').notNull(),
+    idempotencyKey: text('idempotency_key').notNull(),
+    status: text('status').notNull(),
+    inputDigest: text('input_digest').notNull(),
+    latencyMs: integer('latency_ms').notNull(),
+    errorCode: text('error_code'),
+    createdAtMs: integer('created_at_ms').notNull(),
+    completedAtMs: integer('completed_at_ms'),
+  },
+  (table) => [
+    uniqueIndex('idx_skill_tool_executions_idempotency_unique').on(table.idempotencyKey),
+    index('idx_skill_tool_executions_user_created').on(table.userId, table.createdAtMs, table.id),
+  ],
+)
+
+export const skillAuditEvents = sqliteTable(
+  'skill_audit_events',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id').references(() => users.id, { onDelete: 'set null' }),
+    skillId: text('skill_id').notNull(),
+    skillVersion: text('skill_version').notNull(),
+    action: text('action').notNull(),
+    decision: text('decision').notNull(),
+    reason: text('reason').notNull(),
+    scopeType: text('scope_type').notNull(),
+    scopeId: text('scope_id').notNull(),
+    targetId: text('target_id'),
+    metadataJson: text('metadata_json'),
+    createdAtMs: integer('created_at_ms').notNull(),
+  },
+  (table) => [
+    index('idx_skill_audit_events_user_created').on(table.userId, table.createdAtMs, table.id),
+    index('idx_skill_audit_events_skill_created').on(table.skillId, table.createdAtMs),
+  ],
+)
+
+export const skillBackgroundJobs = sqliteTable(
+  'skill_background_jobs',
+  {
+    id: text('id').primaryKey(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    skillId: text('skill_id').notNull(),
+    skillVersion: text('skill_version').notNull(),
+    agentId: text('agent_id')
+      .notNull()
+      .references(() => userAgentCompanions.id, { onDelete: 'cascade' }),
+    conversationId: text('conversation_id')
+      .notNull()
+      .references(() => agentConversations.id, { onDelete: 'cascade' }),
+    permissionGrantId: text('permission_grant_id')
+      .references(() => skillPermissionGrants.id, { onDelete: 'set null' }),
+    payloadJson: text('payload_json').notNull(),
+    status: text('status').notNull(),
+    scheduledAtMs: integer('scheduled_at_ms').notNull(),
+    nextAttemptAtMs: integer('next_attempt_at_ms').notNull(),
+    attempts: integer('attempts').notNull(),
+    maxAttempts: integer('max_attempts').notNull(),
+    revision: integer('revision').notNull(),
+    leaseUntilMs: integer('lease_until_ms'),
+    lastError: text('last_error'),
+    createdAtMs: integer('created_at_ms').notNull(),
+    updatedAtMs: integer('updated_at_ms').notNull(),
+    completedAtMs: integer('completed_at_ms'),
+    cancelledAtMs: integer('cancelled_at_ms'),
+  },
+  (table) => [
+    index('idx_skill_background_jobs_due').on(table.status, table.nextAttemptAtMs, table.scheduledAtMs),
+    index('idx_skill_background_jobs_user_created').on(table.userId, table.createdAtMs, table.id),
+  ],
+)
+
 export const userRoleBindings = sqliteTable(
   'user_role_bindings',
   {
@@ -572,4 +770,11 @@ export const schema = {
   agentConversations,
   agentConversationMessages,
   agentMemories,
+  skillBindings,
+  skillRuns,
+  skillSessions,
+  skillPermissionGrants,
+  skillToolExecutions,
+  skillAuditEvents,
+  skillBackgroundJobs,
 }

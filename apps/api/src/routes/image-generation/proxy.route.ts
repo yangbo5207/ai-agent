@@ -4,6 +4,7 @@ import {
   BizCode,
   ImageGenerationProxyRequestSchema,
   ImageGenerationProxyResponseSchema,
+  ImageGenerationUploadResponseSchema,
   buildSuccess,
   type ImageGenerationProxyRequest,
 } from '@repo/contracts'
@@ -14,6 +15,7 @@ import type { ApiBindings } from '@/bindings'
 import { getApiEnv } from '@/env'
 import { createApiMeta } from '@/lib/api-meta'
 import { AppError } from '@/lib/app-error'
+import { assertGeneratedImageFile, buildGeneratedImageKey } from '@/lib/avatar-storage'
 
 type GeneratedImage = {
   image: string
@@ -21,6 +23,14 @@ type GeneratedImage = {
 }
 
 const imageGenerationProxyRoute = new Hono<{ Bindings: ApiBindings }>()
+
+function isDirectGptImageModel(model: string) {
+  return /^gpt-image-/i.test(model.trim())
+}
+
+function usesResponsesApi(config: ImageGenerationProxyRequest['config']) {
+  return config.providerApi === 'responses' && !isDirectGptImageModel(config.model)
+}
 
 async function requireWebAccessToken(c: Context<{ Bindings: ApiBindings }>) {
   const authorization = c.req.header('authorization')
@@ -55,14 +65,12 @@ function buildImageGenerationEndpoint(config: ImageGenerationProxyRequest['confi
     throw new AppError(BizCode.COMMON_INVALID_REQUEST, 'Image generation Base URL is invalid', 400)
   }
 
-  const baseURL = config.baseURL.replace(/\/$/, '')
+  const baseURL = config.baseURL
+    .replace(/\/$/, '')
+    .replace(/\/(?:responses|images\/generations)$/, '')
 
-  if (config.providerApi === 'responses') {
-    return baseURL.endsWith('/responses') ? baseURL : `${baseURL}/responses`
-  }
-
-  if (baseURL.endsWith('/images/generations')) {
-    return baseURL
+  if (usesResponsesApi(config)) {
+    return `${baseURL}/responses`
   }
 
   return `${baseURL}/images/generations`
@@ -71,10 +79,12 @@ function buildImageGenerationEndpoint(config: ImageGenerationProxyRequest['confi
 function buildUpstreamRequestBody(payload: ImageGenerationProxyRequest) {
   const { config, prompt } = payload
 
-  if (config.providerApi === 'responses') {
+  if (usesResponsesApi(config)) {
     return {
       model: config.model,
-      input: prompt,
+      input: `Generate an image from the following description. Return the generated image only.\n\n${prompt}`,
+      store: false,
+      ...(config.reasoningEffort ? { reasoning: { effort: config.reasoningEffort } } : {}),
       tools: [
         {
           type: 'image_generation',
@@ -84,8 +94,12 @@ function buildUpstreamRequestBody(payload: ImageGenerationProxyRequest) {
           output_format: config.outputFormat,
         },
       ],
+      tool_choice: { type: 'image_generation' },
     }
   }
+
+  const isGptImage = isDirectGptImageModel(config.model)
+  const supportsOutputCompression = isGptImage && ['jpeg', 'webp'].includes(config.outputFormat)
 
   return {
     model: config.model,
@@ -95,7 +109,8 @@ function buildUpstreamRequestBody(payload: ImageGenerationProxyRequest) {
     quality: config.quality,
     background: config.background,
     output_format: config.outputFormat,
-    response_format: 'b64_json',
+    ...(supportsOutputCompression ? { output_compression: 80 } : {}),
+    ...(!isGptImage ? { response_format: 'b64_json' } : {}),
   }
 }
 
@@ -226,6 +241,51 @@ function extractUpstreamErrorMessage(responseBody: unknown) {
   return body.error?.message ?? body.message ?? null
 }
 
+function extractUpstreamOutputMessage(responseBody: unknown) {
+  if (!responseBody || typeof responseBody !== 'object') {
+    return null
+  }
+
+  const body = responseBody as {
+    output_text?: string
+    incomplete_details?: { reason?: string }
+    output?: Array<Record<string, unknown>>
+  }
+  const messages = [body.output_text, body.incomplete_details?.reason]
+
+  for (const outputItem of body.output ?? []) {
+    if (typeof outputItem.error === 'object' && outputItem.error) {
+      const error = outputItem.error as Record<string, unknown>
+
+      if (typeof error.message === 'string') {
+        messages.push(error.message)
+      }
+    }
+
+    const content = Array.isArray(outputItem.content) ? outputItem.content : []
+
+    for (const part of content) {
+      if (!part || typeof part !== 'object') {
+        continue
+      }
+
+      const candidate = part as Record<string, unknown>
+
+      if (typeof candidate.text === 'string') {
+        messages.push(candidate.text)
+      }
+
+      if (typeof candidate.refusal === 'string') {
+        messages.push(candidate.refusal)
+      }
+    }
+  }
+
+  const message = messages.find((value): value is string => Boolean(value?.trim()))
+
+  return message?.trim().slice(0, 500) ?? null
+}
+
 imageGenerationProxyRoute.post(
   '/generate',
   zValidator('json', ImageGenerationProxyRequestSchema, buildValidationErrorHandler('Invalid image generation payload')),
@@ -238,6 +298,9 @@ imageGenerationProxyRoute.post(
       headers: {
         'content-type': 'application/json',
         authorization: `Bearer ${payload.config.apiKey}`,
+        ...(payload.config.actorAuthorization
+          ? { 'x-openai-actor-authorization': payload.config.actorAuthorization }
+          : {}),
       },
       body: JSON.stringify(buildUpstreamRequestBody(payload)),
     }).catch((error) => {
@@ -260,7 +323,15 @@ imageGenerationProxyRoute.post(
     const generatedImage = findGeneratedImage(responseBody, getMimeTypeFromOutputFormat(payload.config.outputFormat))
 
     if (!generatedImage) {
-      throw new AppError(BizCode.SYSTEM_INTERNAL_ERROR, 'Image generation response does not include an image', 500)
+      const outputMessage = extractUpstreamOutputMessage(responseBody)
+
+      throw new AppError(
+        BizCode.SYSTEM_INTERNAL_ERROR,
+        outputMessage
+          ? `Image generation did not return an image: ${outputMessage}`
+          : 'Image generation response does not include an image',
+        500,
+      )
     }
 
     const res = ImageGenerationProxyResponseSchema.parse(generatedImage)
@@ -268,5 +339,37 @@ imageGenerationProxyRoute.post(
     return c.json(buildSuccess(res, createApiMeta()))
   },
 )
+
+imageGenerationProxyRoute.post('/upload', async (c) => {
+  const claims = await requireWebAccessToken(c)
+  const formData = await c.req.formData()
+  const imageFile = formData.get('file')
+
+  if (!(imageFile instanceof File)) {
+    throw new AppError(BizCode.COMMON_INVALID_REQUEST, 'Generated image file is required', 400)
+  }
+
+  const uploadedAtMs = Date.now()
+  const imageBuffer = await imageFile.arrayBuffer()
+  const { extension } = assertGeneratedImageFile(imageFile, imageBuffer)
+  const imageKey = buildGeneratedImageKey(claims.sub, extension, uploadedAtMs)
+
+  await c.env.AVATAR_BUCKET.put(imageKey, imageBuffer, {
+    httpMetadata: {
+      contentType: imageFile.type,
+      cacheControl: 'private, max-age=31536000, immutable',
+      contentDisposition: `inline; filename="generated-image.${extension}"`,
+    },
+  })
+
+  const res = ImageGenerationUploadResponseSchema.parse({
+    key: imageKey,
+    mimeType: imageFile.type,
+    sizeBytes: imageFile.size,
+    uploadedAtMs,
+  })
+
+  return c.json(buildSuccess(res, createApiMeta()))
+})
 
 export default imageGenerationProxyRoute

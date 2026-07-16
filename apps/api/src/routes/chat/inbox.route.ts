@@ -36,6 +36,7 @@ import { getDb } from '@/db/client'
 import { getApiEnv } from '@/env'
 import { createApiMeta } from '@/lib/api-meta'
 import { AppError } from '@/lib/app-error'
+import { executeConfiguredSkillTurn } from '@/skills'
 
 const inboxChatRoute = new Hono<{ Bindings: ApiBindings }>()
 
@@ -3674,6 +3675,28 @@ inboxChatRoute.post(
       }))
     }
 
+    const skillTurn = await executeConfiguredSkillTurn({
+      db,
+      userId: claims.sub,
+      scope: 'single_chat',
+      userText: latestUserText,
+      sourceMessageId: sourceUserMessageId ?? crypto.randomUUID(),
+      bindingTargets: [
+        ...(ownedConversation?.conversation.id
+          ? [{ scopeType: 'conversation' as const, scopeId: ownedConversation.conversation.id }]
+          : []),
+        ...(agentId
+          ? [{ scopeType: 'agent' as const, scopeId: agentId }]
+          : []),
+        { scopeType: 'user', scopeId: claims.sub },
+      ],
+      sessionTarget: ownedConversation?.conversation.id
+        ? { scopeType: 'conversation', scopeId: ownedConversation.conversation.id }
+        : { scopeType: 'agent', scopeId: agentId },
+      agentId,
+      conversationId,
+    })
+
     const messages: ChatCompletionMessage[] = [
       {
         role: 'system',
@@ -3687,6 +3710,7 @@ inboxChatRoute.post(
           getEmotionRouteSystemInstruction({ emotion, route }),
           getRelationshipStageSystemInstruction(relationshipStage),
           getReplyPolicySystemInstruction(replyPolicy),
+          skillTurn.systemInstruction,
           getFeedbackSystemInstruction(recentFeedbacks),
           activeMemories.length > 0
             ? [

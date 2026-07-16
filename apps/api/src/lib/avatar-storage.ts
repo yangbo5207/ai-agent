@@ -3,6 +3,7 @@ import { BizCode } from '@repo/contracts'
 import { AppError } from './app-error'
 
 const avatarMaxBytes = 2 * 1024 * 1024
+const generatedImageMaxBytes = 20 * 1024 * 1024
 const agentImageMinWidth = 720
 const agentImageMinHeight = 1080
 const agentImageAspectRatio = 2 / 3
@@ -62,6 +63,10 @@ export function buildUserAvatarKey(userId: string, file: File, nowMs: number) {
 export function buildAgentImageKey(userId: string, file: File, nowMs: number) {
   const extension = assertAvatarFile(file)
   return `avatars/agents/${userId}/${nowMs}-${uuidv7()}.${extension}`
+}
+
+export function buildGeneratedImageKey(userId: string, extension: string, nowMs: number) {
+  return `images/generated/${userId}/${nowMs}-${uuidv7()}.${extension}`
 }
 
 function readPngDimensions(bytes: Uint8Array, view: DataView): ImageDimensions | null {
@@ -258,6 +263,36 @@ export function assertAgentImageFile(file: File, input: ArrayBuffer) {
   const dimensions = readImageDimensions(input)
 
   assertAgentImageDimensions(dimensions)
+
+  return {
+    extension,
+    dimensions,
+  }
+}
+
+export function assertGeneratedImageFile(file: File, input: ArrayBuffer) {
+  const extension = avatarExtensionByMimeType[file.type]
+  const dimensions = readImageDimensions(input)
+
+  if (!extension || !dimensions || dimensions.width <= 0 || dimensions.height <= 0) {
+    throw new AppError(
+      BizCode.COMMON_INVALID_REQUEST,
+      'Generated image must be a valid JPG, PNG, or WebP file',
+      400,
+    )
+  }
+
+  if (file.size <= 0) {
+    throw new AppError(BizCode.COMMON_INVALID_REQUEST, 'Generated image file is empty', 400)
+  }
+
+  if (file.size > generatedImageMaxBytes) {
+    throw new AppError(
+      BizCode.COMMON_INVALID_REQUEST,
+      'Generated image file must be 20MB or smaller',
+      400,
+    )
+  }
 
   return {
     extension,

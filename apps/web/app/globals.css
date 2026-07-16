@@ -16,3 +16,35 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+@keyframes skeleton-scan {
+  0% {
+    transform: translateX(-110%);
+  }
+
+  55%,
+  100% {
+    transform: translateX(110%);
+  }
+}
+
+.skeleton-scan::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(
+    100deg,
+    transparent 15%,
+    rgb(255 255 255 / 72%) 48%,
+    transparent 82%
+  );
+  animation: skeleton-scan 1.8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-scan::after {
+    animation: none;
+    transform: translateX(0);
+    opacity: 0.35;
+  }
+}

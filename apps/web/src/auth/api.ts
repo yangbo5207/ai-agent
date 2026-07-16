@@ -12,6 +12,8 @@ import type {
   CreateAgentGroupChatResponse,
   GenerateAgentCareEventRequest,
   GenerateAgentCareEventResponse,
+  GenerateMyAgentCompanionDraftRequest,
+  GenerateMyAgentCompanionDraftResponse,
   AgentGroupChatDetailResponse,
   AgentGroupChatListResponse,
   AgentGroupChatMessagesResponse,
@@ -32,6 +34,21 @@ import type {
   LlmTestConnectionResponse,
   SubmitAgentMessageFeedbackRequest,
   SubmitAgentMessageFeedbackResponse,
+  CompanionSkillBindingTarget,
+  CompanionSkillCatalogResponse,
+  CompanionSkillEvaluationSummary,
+  CompanionSkillRunListResponse,
+  CompanionSkillSessionListResponse,
+  CancelCompanionSkillSessionResponse,
+  CancelCompanionSkillBackgroundJobResponse,
+  CompanionSkillBackgroundJobListResponse,
+  CompanionSkillPermissionGrantListResponse,
+  CreateCompanionSkillBackgroundJobRequest,
+  CreateCompanionSkillBackgroundJobResponse,
+  UpdateCompanionSkillBindingRequest,
+  UpdateCompanionSkillBindingResponse,
+  UpdateCompanionSkillPermissionGrantRequest,
+  UpdateCompanionSkillPermissionGrantResponse,
   WebGithubAuthUrlResponse,
   WebGithubTicketLoginRequest,
   WebGithubTicketLoginResponse,
@@ -84,6 +101,71 @@ export function getMyAgentSummary() {
 
 export function testLlmConnection(input: LlmTestConnectionRequest) {
   return http.post<LlmTestConnectionResponse, LlmTestConnectionRequest>('/rpc/llm/test-connection', input)
+}
+
+export function getCompanionSkillCatalog(target: CompanionSkillBindingTarget) {
+  const search = new URLSearchParams({ scopeType: target.scopeType })
+
+  if (target.scopeId) {
+    search.set('scopeId', target.scopeId)
+  }
+
+  return http.get<CompanionSkillCatalogResponse>(`/rpc/skills/catalog?${search.toString()}`)
+}
+
+export function updateCompanionSkillBinding(input: UpdateCompanionSkillBindingRequest) {
+  return http.patch<UpdateCompanionSkillBindingResponse, UpdateCompanionSkillBindingRequest>(
+    '/rpc/skills/binding',
+    input,
+  )
+}
+
+export function getCompanionSkillRuns(limit = 30) {
+  return http.get<CompanionSkillRunListResponse>(`/rpc/skills/runs?limit=${limit}`)
+}
+
+export function getCompanionSkillEvaluationSummary() {
+  return http.get<CompanionSkillEvaluationSummary>('/rpc/skills/evaluations/summary')
+}
+
+export function getCompanionSkillSessions(activeOnly = true, limit = 20) {
+  return http.get<CompanionSkillSessionListResponse>(
+    `/rpc/skills/sessions?activeOnly=${activeOnly ? 'true' : 'false'}&limit=${limit}`,
+  )
+}
+
+export function cancelCompanionSkillSession(sessionId: string) {
+  return http.post<CancelCompanionSkillSessionResponse>(
+    `/rpc/skills/sessions/${encodeURIComponent(sessionId)}/cancel`,
+  )
+}
+
+export function getCompanionSkillPermissionGrants() {
+  return http.get<CompanionSkillPermissionGrantListResponse>('/rpc/skills/permissions')
+}
+
+export function updateCompanionSkillPermissionGrant(input: UpdateCompanionSkillPermissionGrantRequest) {
+  return http.patch<UpdateCompanionSkillPermissionGrantResponse, UpdateCompanionSkillPermissionGrantRequest>(
+    '/rpc/skills/permissions',
+    input,
+  )
+}
+
+export function getCompanionSkillBackgroundJobs(limit = 20) {
+  return http.get<CompanionSkillBackgroundJobListResponse>(`/rpc/skills/background-jobs?limit=${limit}`)
+}
+
+export function createCompanionSkillBackgroundJob(input: CreateCompanionSkillBackgroundJobRequest) {
+  return http.post<CreateCompanionSkillBackgroundJobResponse, CreateCompanionSkillBackgroundJobRequest>(
+    '/rpc/skills/background-jobs',
+    input,
+  )
+}
+
+export function cancelCompanionSkillBackgroundJob(jobId: string) {
+  return http.post<CancelCompanionSkillBackgroundJobResponse>(
+    `/rpc/skills/background-jobs/${encodeURIComponent(jobId)}/cancel`,
+  )
 }
 
 export function getMyAgentInbox() {
@@ -142,6 +224,13 @@ export function sendAgentGroupChatMessage(input: SendAgentGroupChatMessageReques
 
 export function createMyAgentCompanion(input: CreateMyAgentCompanionRequest) {
   return http.post<CreateMyAgentCompanionResponse, CreateMyAgentCompanionRequest>('/rpc/agent/my/create', input)
+}
+
+export function generateMyAgentCompanionDraft(input: GenerateMyAgentCompanionDraftRequest) {
+  return http.post<GenerateMyAgentCompanionDraftResponse, GenerateMyAgentCompanionDraftRequest>(
+    '/rpc/agent/my/generate-draft',
+    input,
+  )
 }
 
 export function getMyAgentCompanionDetail(agentId: string) {

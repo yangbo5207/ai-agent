@@ -108,6 +108,29 @@ function getMessagePreview(groupChat: AgentGroupChat) {
 
 const groupQuickPrompts = ["汇总一下大家的意见", "请给出不同的视角", "一起制定下一步计划"]
 
+type MentionContext = {
+  end: number
+  query: string
+  start: number
+}
+
+function getMentionContext(value: string, cursor: number): MentionContext | null {
+  const beforeCursor = value.slice(0, cursor)
+  const match = beforeCursor.match(/(^|\s)@([^\s@]*)$/)
+
+  if (!match) {
+    return null
+  }
+
+  const query = match[2] ?? ""
+
+  return {
+    start: cursor - query.length - 1,
+    end: cursor,
+    query,
+  }
+}
+
 type GroupChatListProps = {
   className?: string
   groupChats: AgentGroupChat[]
@@ -506,6 +529,8 @@ export default function GroupChatsPage() {
   const [isMobileMembersOpen, setIsMobileMembersOpen] = useState(false)
   const [draftMessage, setDraftMessage] = useState("")
   const [agentSearch, setAgentSearch] = useState("")
+  const [mentionContext, setMentionContext] = useState<MentionContext | null>(null)
+  const [mentionIndex, setMentionIndex] = useState(0)
   const [llmStore, setLlmStore] = useState<LocalLlmConfigStore>({ selectedConfigId: null, items: [] })
   const shouldStickToBottomRef = useRef(false)
   const messageScrollRef = useRef<HTMLDivElement | null>(null)
@@ -545,6 +570,37 @@ export default function GroupChatsPage() {
   const enabledLlmConfigs = llmStore.items.filter((item) => item.enabled)
   const selectedLlmConfig =
     enabledLlmConfigs.find((item) => item.id === llmStore.selectedConfigId) ?? null
+  const mentionCandidates = useMemo(() => {
+    if (!mentionContext) {
+      return []
+    }
+
+    const query = mentionContext.query.trim().toLowerCase()
+
+    return currentMembers.filter((member) => {
+      if (!query) {
+        return true
+      }
+
+      return [member.name, member.headline ?? ""].some((value) => value.toLowerCase().includes(query))
+    })
+  }, [currentMembers, mentionContext])
+
+  function updateDraftMessage(value: string, cursor: number) {
+    setDraftMessage(value)
+    setMentionContext(getMentionContext(value, cursor))
+    setMentionIndex(0)
+  }
+
+  function insertMention(member: AgentGroupChat["members"][number]) {
+    if (!mentionContext) {
+      return
+    }
+
+    setDraftMessage((current) => `${current.slice(0, mentionContext.start)}@${member.name} ${current.slice(mentionContext.end)}`)
+    setMentionContext(null)
+    setMentionIndex(0)
+  }
   const sendMutation = useMutation({
     mutationFn: ({ groupChatId, message }: { groupChatId: string; message: string }) => {
       const llmConfig = toLlmRequestConfig(readLocalLlmConfigStore())
@@ -708,6 +764,12 @@ export default function GroupChatsPage() {
   const latestMessageId = messages.at(-1)?.id ?? null
 
   useEffect(() => {
+    shouldStickToBottomRef.current = true
+    setMentionContext(null)
+    setMentionIndex(0)
+  }, [selectedGroupChat?.id])
+
+  useEffect(() => {
     if (!selectedGroupChat?.id) {
       return
     }
@@ -850,6 +912,7 @@ export default function GroupChatsPage() {
                       }
 
                       shouldStickToBottomRef.current = true
+                      setMentionContext(null)
                       sendMutation.mutate({ groupChatId: selectedGroupChat.id, message: text })
                     }}
                   >
@@ -860,7 +923,11 @@ export default function GroupChatsPage() {
                             className="h-7 shrink-0 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                             disabled={isSending}
                             key={prompt}
-                            onClick={() => setDraftMessage(prompt)}
+                            onClick={() => {
+                              setDraftMessage(prompt)
+                              setMentionContext(null)
+                              setMentionIndex(0)
+                            }}
                             type="button"
                           >
                             {prompt}
@@ -871,10 +938,80 @@ export default function GroupChatsPage() {
                     <PromptInputTextarea
                       className="max-h-36 min-h-[4.5rem] px-3 py-3 text-sm sm:max-h-44 sm:min-h-20"
                       disabled={isSending}
-                      onChange={(event) => setDraftMessage(event.currentTarget.value)}
-                      placeholder="输入群聊消息，可以点名 Agent 或邀请大家一起讨论..."
+                      onChange={(event) => {
+                        updateDraftMessage(
+                          event.currentTarget.value,
+                          event.currentTarget.selectionStart ?? event.currentTarget.value.length,
+                        )
+                      }}
+                      onKeyDown={(event) => {
+                        if (!mentionContext) {
+                          return
+                        }
+
+                        if (event.key === "Escape") {
+                          event.preventDefault()
+                          setMentionContext(null)
+                          return
+                        }
+
+                        if (mentionCandidates.length === 0) {
+                          return
+                        }
+
+                        if (event.key === "ArrowDown") {
+                          event.preventDefault()
+                          setMentionIndex((current) => (current + 1) % mentionCandidates.length)
+                          return
+                        }
+
+                        if (event.key === "ArrowUp") {
+                          event.preventDefault()
+                          setMentionIndex((current) => (current - 1 + mentionCandidates.length) % mentionCandidates.length)
+                          return
+                        }
+
+                        if (event.key === "Enter" || event.key === "Tab") {
+                          event.preventDefault()
+                          insertMention(mentionCandidates[mentionIndex] ?? mentionCandidates[0]!)
+                        }
+                      }}
+                      placeholder="输入群聊消息，输入 @ 点名群内 Agent..."
                       value={draftMessage}
                     />
+                    {mentionContext ? (
+                      <div className="absolute bottom-12 left-3 z-20 w-[min(22rem,calc(100%-1.5rem))] overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg">
+                        <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2 text-xs text-slate-400">
+                          <span>提及群成员</span>
+                          <span>@{mentionContext.query || "全部"}</span>
+                        </div>
+                        {mentionCandidates.length > 0 ? (
+                          <div className="max-h-56 overflow-y-auto p-1">
+                            {mentionCandidates.map((member, index) => (
+                              <button
+                                className={cn(
+                                  "flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left transition-colors",
+                                  index === mentionIndex ? "bg-slate-100" : "hover:bg-slate-50",
+                                )}
+                                key={member.id}
+                                onClick={() => insertMention(member)}
+                                onMouseDown={(event) => event.preventDefault()}
+                                type="button"
+                              >
+                                <AgentAvatar className="size-7 rounded-md" imageKey={member.imageKey} name={member.name} />
+                                <span className="min-w-0 flex-1">
+                                  <span className="block truncate text-sm font-medium text-slate-700">{member.name}</span>
+                                  <span className="mt-0.5 block truncate text-xs text-slate-400">{member.headline || "Agent 伴侣"}</span>
+                                </span>
+                                <span className="shrink-0 text-xs text-slate-400">@{member.name}</span>
+                              </button>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="px-3 py-4 text-sm text-slate-400">没有匹配的群成员</p>
+                        )}
+                      </div>
+                    ) : null}
                     <PromptInputFooter className="border-t bg-slate-50/70 px-3 py-2">
                       <PromptInputTools className="min-w-0 gap-2 text-xs text-muted-foreground">
                         <label className="flex min-w-0 items-center gap-1.5">

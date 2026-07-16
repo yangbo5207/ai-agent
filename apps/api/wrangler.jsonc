@@ -3,6 +3,9 @@
 	"name": "api",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-04-22",
+	"triggers": {
+		"crons": ["*/5 * * * *"]
+	},
 	"d1_databases": [
 		{
 			"binding": "DB",
@@ -29,6 +32,9 @@
 	},
 	"env": {
 		"test": {
+			"triggers": {
+				"crons": ["*/5 * * * *"]
+			},
 			"d1_databases": [
 				{
 					"binding": "DB",
@@ -55,6 +61,9 @@
 		},
 		"production": {
 			"workers_dev": true,
+			"triggers": {
+				"crons": ["*/5 * * * *"]
+			},
 			"d1_databases": [
 				{
 					"binding": "DB",

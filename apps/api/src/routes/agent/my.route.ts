@@ -1,4 +1,6 @@
 import { uuidv7 } from 'uuidv7'
+import { ChatPromptTemplate } from '@langchain/core/prompts'
+import { ChatOpenAI } from '@langchain/openai'
 import { Hono, type Context } from 'hono'
 import {
   BizCode,
@@ -6,6 +8,9 @@ import {
   AgentCarePlanResponseSchema,
   CreateMyAgentCompanionRequestSchema,
   CreateMyAgentCompanionResponseSchema,
+  GeneratedMyAgentCompanionDraftSchema,
+  GenerateMyAgentCompanionDraftRequestSchema,
+  GenerateMyAgentCompanionDraftResponseSchema,
   GenerateAgentCareEventRequestSchema,
   GenerateAgentCareEventResponseSchema,
   MyAgentMemoriesResponseSchema,
@@ -19,6 +24,7 @@ import {
   UpdateMyAgentCompanionResponseSchema,
   UploadMyAgentCompanionImageResponseSchema,
   buildSuccess,
+  type GenerateMyAgentCompanionDraftRequest,
 } from '@repo/contracts'
 import { zValidator } from '@hono/zod-validator'
 import { authUnauthorizedError } from '@/auth/errors'
@@ -52,6 +58,131 @@ import { AppError } from '@/lib/app-error'
 import { assertAgentImageFile, buildAgentImageKey } from '@/lib/avatar-storage'
 
 const myAgentRoute = new Hono<{ Bindings: ApiBindings }>()
+
+type AgentDraftProviderConfig = {
+  apiKey: string
+  baseURL: string
+  model: string
+  wireApi: 'chat_completions' | 'responses'
+  reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high'
+}
+
+const agentDraftCreativeDirections = [
+  '温暖日常陪伴，但角色要有独立生活与真实兴趣',
+  '安静理性、擅长梳理复杂情绪与现实问题',
+  '轻松有趣、富有创造力，但表达不过度热情',
+  '成熟可靠、边界清晰，适合长期稳定交流',
+  '带有鲜明职业背景和生活细节，关系发展自然克制',
+]
+
+const agentDraftPrompt = ChatPromptTemplate.fromMessages([
+  [
+    'system',
+    [
+      '你是 AI 电子伴侣产品的资深角色设计师。请创建一个原创、可信、适合长期聊天的中文 Agent 伴侣。',
+      '所有字段必须彼此一致，角色需要有独立人格、生活背景、兴趣和表达习惯，不能只是泛化的客服助手。',
+      '避免使用现实公众人物、受版权保护的知名角色或冒充真人身份。',
+      '不得鼓励情感依赖、排他关系、操控、危险行为或违法行为；边界规则要具体、自然且可执行。',
+      '名称简洁易记；开场白必须符合角色语气，不要自我介绍成长篇说明。',
+      'imagePrompt 必须能直接用于生成单人 2:3 竖版角色立绘，写清外观、服装、姿态、光线、背景和视觉风格，并明确不要文字、水印、边框、多人和畸形肢体。',
+      '只返回结构化结果，不要添加解释或 Markdown。',
+    ].join('\n'),
+  ],
+  [
+    'user',
+    [
+      '用户创作方向：{brief}',
+      '本次随机创作线索：{creativeDirection}',
+      '请生成名称、定位、角色说明、故事背景、性格与互动方式、语气风格、安全边界、开场白和角色图提示词。',
+    ].join('\n'),
+  ],
+])
+
+function resolveAgentDraftProviderConfig(params: {
+  payload: GenerateMyAgentCompanionDraftRequest
+  env: ReturnType<typeof getApiEnv>
+}): AgentDraftProviderConfig {
+  if (params.payload.llmConfig) {
+    return {
+      apiKey: params.payload.llmConfig.apiKey,
+      baseURL: params.payload.llmConfig.baseURL,
+      model: params.payload.llmConfig.model,
+      wireApi: params.payload.llmConfig.wireApi === 'responses' ? 'responses' : 'chat_completions',
+      reasoningEffort: params.payload.llmConfig.reasoningEffort,
+    }
+  }
+
+  if (!params.env.DEEPSEEK_API_KEY) {
+    throw new AppError(BizCode.SYSTEM_INTERNAL_ERROR, 'LLM API key is not configured', 500)
+  }
+
+  return {
+    apiKey: params.env.DEEPSEEK_API_KEY,
+    baseURL: params.env.DEEPSEEK_BASE_URL ?? 'https://api.deepseek.com/v1',
+    model: params.env.DEEPSEEK_MODEL ?? 'deepseek-chat',
+    wireApi: 'chat_completions',
+  }
+}
+
+function buildAgentDraftModel(config: AgentDraftProviderConfig) {
+  return new ChatOpenAI({
+    model: config.model,
+    apiKey: config.apiKey,
+    useResponsesApi: config.wireApi === 'responses',
+    configuration: {
+      baseURL: config.baseURL.replace(/\/$/, ''),
+    },
+    ...(config.reasoningEffort ? { reasoning: { effort: config.reasoningEffort } } : {}),
+    ...(config.wireApi === 'responses' ? { zdrEnabled: true } : {}),
+  })
+}
+
+function getAgentDraftStructuredOutputMethods(config: AgentDraftProviderConfig) {
+  return config.wireApi === 'responses'
+    ? ['jsonSchema', 'functionCalling', 'jsonMode'] as const
+    : ['functionCalling', 'jsonSchema', 'jsonMode'] as const
+}
+
+async function generateAgentDraft(params: {
+  providerConfig: AgentDraftProviderConfig
+  brief: string
+  signal?: AbortSignal
+}) {
+  let lastError: unknown = null
+
+  for (const method of getAgentDraftStructuredOutputMethods(params.providerConfig)) {
+    try {
+      const structuredModel = buildAgentDraftModel(params.providerConfig).withStructuredOutput(
+        GeneratedMyAgentCompanionDraftSchema,
+        {
+          name: 'generate_agent_companion_draft',
+          method,
+        },
+      )
+      const chain = agentDraftPrompt.pipe(structuredModel)
+      const creativeDirection = agentDraftCreativeDirections[
+        Math.floor(Math.random() * agentDraftCreativeDirections.length)
+      ] ?? agentDraftCreativeDirections[0]
+      const result = await chain.invoke({
+        brief: params.brief || '自由创作一个与现有示例不同的新角色',
+        creativeDirection,
+      }, params.signal ? { signal: params.signal } : undefined)
+
+      return GeneratedMyAgentCompanionDraftSchema.parse(result)
+    } catch (error) {
+      lastError = error
+    }
+  }
+
+  console.warn('Agent companion draft generation failed', lastError)
+  throw new AppError(
+    BizCode.SYSTEM_UPSTREAM_TIMEOUT,
+    lastError instanceof Error
+      ? `Agent 配置生成失败：${lastError.message.slice(0, 500)}`
+      : 'Agent 配置生成失败，请检查 LLM 配置。',
+    504,
+  )
+}
 
 type UserAgentCompanionInboxRecord = {
   id: string
@@ -452,6 +583,32 @@ myAgentRoute.post('/image/upload', async (c) => {
 
   return c.json(buildSuccess(res, createApiMeta()))
 })
+
+myAgentRoute.post(
+  '/generate-draft',
+  zValidator(
+    'json',
+    GenerateMyAgentCompanionDraftRequestSchema,
+    buildValidationErrorHandler('Invalid agent companion generation payload'),
+  ),
+  async (c) => {
+    await requireWebAccessToken(c)
+
+    const payload = c.req.valid('json')
+    const providerConfig = resolveAgentDraftProviderConfig({
+      payload,
+      env: getApiEnv(c.env),
+    })
+    const draft = await generateAgentDraft({
+      providerConfig,
+      brief: payload.brief ?? '',
+      signal: c.req.raw.signal,
+    })
+    const res = GenerateMyAgentCompanionDraftResponseSchema.parse({ draft })
+
+    return c.json(buildSuccess(res, createApiMeta()))
+  },
+)
 
 myAgentRoute.post(
   '/create',

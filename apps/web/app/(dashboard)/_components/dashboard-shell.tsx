@@ -25,6 +25,10 @@ type DashboardShellProps = {
 }
 
 export function DashboardShell({ children, title }: DashboardShellProps) {
+  React.useEffect(() => {
+    document.title = `${title} · 电子伴侣`
+  }, [title])
+
   return (
     <SidebarProvider
       style={
