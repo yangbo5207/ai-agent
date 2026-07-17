@@ -36,7 +36,7 @@ import { getDb } from '@/db/client'
 import { getApiEnv } from '@/env'
 import { createApiMeta } from '@/lib/api-meta'
 import { AppError } from '@/lib/app-error'
-import { executeConfiguredSkillTurn } from '@/skills'
+import { executeConfiguredSkillTurnSafely } from '@/skills'
 
 const inboxChatRoute = new Hono<{ Bindings: ApiBindings }>()
 
@@ -3675,7 +3675,7 @@ inboxChatRoute.post(
       }))
     }
 
-    const skillTurn = await executeConfiguredSkillTurn({
+    const skillTurn = await executeConfiguredSkillTurnSafely({
       db,
       userId: claims.sub,
       scope: 'single_chat',

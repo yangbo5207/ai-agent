@@ -1,6 +1,6 @@
 export { resolvePromptSkill } from './core/prompt'
 export { resolveConfiguredPromptSkill } from './core/runtime'
-export { executeConfiguredSkillTurn } from './core/executor'
+export { executeConfiguredSkillTurn, executeConfiguredSkillTurnSafely } from './core/executor'
 export { getPromptSkill, listPromptSkills, listPromptSkillVersions, listRegisteredPromptSkills } from './core/registry'
 export { getWorkflowSkill, listRegisteredWorkflowSkills, listWorkflowSkills } from './core/workflow-registry'
 export { getToolSkill, listRegisteredToolSkills, listToolSkills } from './core/tool-registry'

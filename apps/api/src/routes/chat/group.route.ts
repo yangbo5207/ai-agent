@@ -44,7 +44,7 @@ import { getDb } from '@/db/client'
 import { getApiEnv } from '@/env'
 import { createApiMeta } from '@/lib/api-meta'
 import { AppError } from '@/lib/app-error'
-import { executeConfiguredSkillTurn } from '@/skills'
+import { executeConfiguredSkillTurnSafely } from '@/skills'
 
 type ChatCompletionMessage = {
   role: 'system' | 'user' | 'assistant'
@@ -2409,7 +2409,7 @@ groupChatRoute.post(
       turnIndex,
       createdAtMs: userMessageNowMs,
     }
-    const skillTurn = await executeConfiguredSkillTurn({
+    const skillTurn = await executeConfiguredSkillTurnSafely({
       db,
       userId: claims.sub,
       scope: 'group_chat',

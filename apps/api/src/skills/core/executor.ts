@@ -480,3 +480,28 @@ export async function executeConfiguredSkillTurn(params: {
     session: null,
   }
 }
+
+export async function executeConfiguredSkillTurnSafely(
+  params: Parameters<typeof executeConfiguredSkillTurn>[0],
+): Promise<ResolvedSkillTurn> {
+  try {
+    return await executeConfiguredSkillTurn(params)
+  } catch (error) {
+    console.error('Skill execution failed; continuing chat without Skill enhancement', {
+      scope: params.scope,
+      userId: params.userId,
+      agentId: params.agentId ?? null,
+      groupChatId: params.groupChatId ?? null,
+      conversationId: params.conversationId ?? null,
+      error,
+    })
+
+    return {
+      selection: null,
+      bindingSource: null,
+      runId: null,
+      systemInstruction: '',
+      session: null,
+    }
+  }
+}

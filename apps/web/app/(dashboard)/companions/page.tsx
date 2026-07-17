@@ -36,21 +36,32 @@ const tileClassNames = [
   "bg-[#ececec]",
 ]
 
-const spanClassNames = [
-  "row-span-5 sm:col-span-2 2xl:col-span-2",
-  "row-span-4",
-  "row-span-5",
-  "row-span-4",
-  "row-span-6",
-  "row-span-4 sm:col-span-2 2xl:col-span-1",
-]
+const spanClassNamesByGroupSize: Record<number, string[]> = {
+  1: ["sm:col-span-2 2xl:col-span-4"],
+  2: ["2xl:col-span-2", "2xl:col-span-2"],
+  3: ["sm:col-span-2 2xl:col-span-2", "", ""],
+  4: ["", "", "", ""],
+  5: ["sm:col-span-2 2xl:col-span-2", "", "", "2xl:col-span-2", "2xl:col-span-2"],
+  6: [
+    "sm:col-span-2 2xl:col-span-2",
+    "",
+    "",
+    "",
+    "2xl:col-span-2",
+    "sm:col-span-2 2xl:col-span-1",
+  ],
+}
 
 function getTileClassName(index: number) {
   return tileClassNames[index % tileClassNames.length]!
 }
 
-function getSpanClassName(index: number) {
-  return spanClassNames[index % spanClassNames.length]!
+function getSpanClassName(index: number, total: number) {
+  const groupIndex = index % 6
+  const groupStart = index - groupIndex
+  const groupSize = Math.min(6, total - groupStart)
+
+  return cn("row-span-5", spanClassNamesByGroupSize[groupSize]?.[groupIndex])
 }
 
 function getStatusTone(agent: MyAgentInboxItem) {
@@ -127,7 +138,7 @@ function CompanionsLoading() {
         {[0, 1, 2, 3, 4, 5].map((item) => (
           <div
             className={cn(
-              getSpanClassName(item),
+              getSpanClassName(item, 6),
               "animate-pulse bg-slate-200",
             )}
             key={item}
@@ -328,7 +339,7 @@ export default function CompanionsPage() {
                   {filteredCompanions.map((companion, index) => (
                     <Link
                       className={cn(
-                        getSpanClassName(index),
+                        getSpanClassName(index, filteredCompanions.length),
                         getTileClassName(index),
                         "group relative flex min-h-0 flex-col overflow-hidden p-4 text-slate-950",
                       )}
