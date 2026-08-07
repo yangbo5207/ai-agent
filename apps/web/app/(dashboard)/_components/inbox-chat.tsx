@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useChat, type UIMessage } from "@ai-sdk/react"
 import { TextStreamChatTransport } from "ai"
+import type { StickToBottomContext } from "use-stick-to-bottom"
 import type {
   AgentConversationResponse,
   AgentMessageFeedback,
@@ -11,9 +12,14 @@ import type {
   InboxChatRequest,
 } from "@repo/contracts"
 import {
+  AtSign,
   Clock3,
+  CircleDot,
+  Heart,
+  LoaderCircle,
   PanelLeftOpen,
   RadioTower,
+  Sparkles,
   ThumbsDown,
   ThumbsUp,
 } from "lucide-react"
@@ -60,6 +66,14 @@ type InboxChatProps = {
 
 type InboxChatInnerProps = InboxChatProps & {
   serverConversation: AgentConversationResponse
+  isConversationTransitioning?: boolean
+}
+
+type PersistedHistoryMessage = AgentConversationResponse["messages"][number]
+
+type LocalHistoryPage = {
+  id: string
+  messages: PersistedHistoryMessage[]
 }
 
 const quickPrompts = [
@@ -116,6 +130,59 @@ function buildInitialMessages(serverConversation: AgentConversationResponse): UI
           text: "我已经准备好陪你聊天了。你可以直接说今天想聊什么。",
         },
       ],
+    },
+  ]
+}
+
+function flattenHistoryPages(pages: LocalHistoryPage[]) {
+  const seenMessageIds = new Set<string>()
+  const messages: PersistedHistoryMessage[] = []
+
+  for (const page of pages) {
+    for (const message of page.messages) {
+      if (seenMessageIds.has(message.id)) {
+        continue
+      }
+
+      seenMessageIds.add(message.id)
+      messages.push(message)
+    }
+  }
+
+  return messages
+}
+
+function buildMessagesFromHistoryPages(pages: LocalHistoryPage[], serverConversation: AgentConversationResponse) {
+  const persistedMessages = flattenHistoryPages(pages)
+
+  if (persistedMessages.length > 0) {
+    return persistedMessages.map(toUiMessage)
+  }
+
+  return buildInitialMessages(serverConversation)
+}
+
+function replaceLatestHistoryPage(pages: LocalHistoryPage[], latestMessages: PersistedHistoryMessage[]) {
+  const latestMessageIds = new Set(latestMessages.map((message) => message.id))
+  const olderPages = pages
+    .filter((page) => page.id !== "latest")
+    .map((page) => ({
+      ...page,
+      messages: page.messages.filter((message) => !latestMessageIds.has(message.id)),
+    }))
+    .filter((page) => page.messages.length > 0)
+  const olderMessageIds = new Set(flattenHistoryPages(olderPages).map((message) => message.id))
+  const retainedLatestMessages = (pages.find((page) => page.id === "latest")?.messages ?? [])
+    .filter((message) => !latestMessageIds.has(message.id) && !olderMessageIds.has(message.id))
+
+  return [
+    ...olderPages,
+    ...(retainedLatestMessages.length > 0
+      ? [{ id: `retained-${retainedLatestMessages[0]!.id}`, messages: retainedLatestMessages }]
+      : []),
+    {
+      id: "latest",
+      messages: latestMessages,
     },
   ]
 }
@@ -197,7 +264,7 @@ function TypingBubble({ conversation }: { conversation: ChatConversation }) {
       />
       <div className="flex min-w-0 max-w-[min(38rem,82%)] flex-col gap-1.5">
         <span className="text-xs font-medium text-slate-500">{conversation.name}</span>
-        <div className="rounded-md border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-800">
+        <div className="relative rounded-md border border-slate-200 bg-white px-4 py-3 text-sm leading-6 text-slate-800 before:absolute before:top-2 before:-left-2 before:h-0 before:w-0 before:border-y-[6px] before:border-y-transparent before:border-r-[8px] before:border-r-slate-200 after:absolute after:top-[9px] after:-left-[6px] after:h-0 after:w-0 after:border-y-[5px] after:border-y-transparent after:border-r-[7px] after:border-r-white">
           <div className="flex items-center gap-2.5">
             <span className="text-slate-500">正在回复</span>
             <div className="flex items-center gap-1">
@@ -214,23 +281,23 @@ function TypingBubble({ conversation }: { conversation: ChatConversation }) {
 
 function InboxChatLoadingPanel({ conversation }: { conversation: ChatConversation }) {
   return (
-    <section className="flex min-h-0 flex-1 flex-col bg-slate-50/70">
-      <div className="border-b bg-white/90 px-4 py-4 sm:px-6">
+    <section className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
+      <div className="border-b border-[#e3dbd0] bg-[#fbfaf7] px-4 py-4 sm:px-6">
         <div className="flex items-center gap-4">
           <AgentAvatar
-            className="size-14 rounded-2xl bg-slate-950 text-base text-white"
-            fallbackClassName="bg-slate-950 text-white"
+            className="size-14 rounded-md border-[#27353a] bg-[#27353a] text-base text-white"
+            fallbackClassName="bg-[#27353a] text-white"
             imageKey={conversation.imageKey}
             name={conversation.name}
           />
           <div className="min-w-0 flex-1">
-            <div className="h-5 w-44 animate-pulse rounded bg-slate-100" />
-            <div className="mt-3 h-4 w-64 max-w-full animate-pulse rounded bg-slate-100" />
+            <div className="h-5 w-44 animate-pulse rounded bg-[#eae4da]" />
+            <div className="mt-3 h-4 w-64 max-w-full animate-pulse rounded bg-[#eae4da]" />
           </div>
         </div>
       </div>
       <div className="flex flex-1 items-center justify-center px-5 py-8">
-        <div className="text-sm font-medium text-slate-500">正在加载聊天历史...</div>
+        <div className="text-sm font-medium text-[#857c70]">正在加载聊天历史...</div>
       </div>
     </section>
   )
@@ -242,17 +309,17 @@ function InboxChatErrorPanel({ conversation, error }: { conversation: ChatConver
     : "请确认 API 已启动并完成最新 D1 迁移后刷新页面。"
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col bg-slate-50/70">
+    <section className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
       <div className="flex flex-1 items-center justify-center px-5 py-8">
         <div className="w-full max-w-sm text-center">
           <AgentAvatar
-            className="mx-auto size-12 rounded-2xl bg-slate-100 text-sm text-slate-700"
-            fallbackClassName="bg-slate-100 text-slate-700"
+            className="mx-auto size-12 rounded-md border-[#ded5c9] bg-[#eee8de] text-sm text-[#53665f]"
+            fallbackClassName="bg-[#eee8de] text-[#53665f]"
             imageKey={conversation.imageKey}
             name={conversation.name}
           />
-          <h2 className="mt-4 text-base font-semibold text-slate-950">聊天历史加载失败</h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+          <h2 className="mt-4 text-base font-semibold text-[#27353a]">聊天历史加载失败</h2>
+          <p className="mt-2 text-sm leading-6 text-[#857c70]">
             {message}
           </p>
         </div>
@@ -261,13 +328,36 @@ function InboxChatErrorPanel({ conversation, error }: { conversation: ChatConver
   )
 }
 
-function InboxChatInner({ conversation, serverConversation, onConversationUpdated, onOpenConversationList }: InboxChatInnerProps) {
+function InboxChatInner({
+  conversation,
+  serverConversation,
+  onConversationUpdated,
+  onOpenConversationList,
+  isConversationTransitioning = false,
+}: InboxChatInnerProps) {
   const { profile } = useWebDashboardContext()
   const queryClient = useQueryClient()
   const [draftMessage, setDraftMessage] = useState("")
-  const [historyMessages, setHistoryMessages] = useState<UIMessage[]>(() => buildInitialMessages(serverConversation))
+  const [initialChatMessages] = useState<UIMessage[]>(() => buildInitialMessages(serverConversation))
+  const [historyPages, setHistoryPages] = useState<LocalHistoryPage[]>(() => [
+    {
+      id: "latest",
+      messages: serverConversation.messages,
+    },
+  ])
+  const historyPagesRef = useRef(historyPages)
+  const conversationScrollContextRef = useRef<StickToBottomContext | null>(null)
+  const pendingScrollRestoreRef = useRef<{ scrollHeight: number; scrollTop: number } | null>(null)
+  const isLoadingMoreHistoryRef = useRef(false)
+  const canLoadMoreOnScrollRef = useRef(false)
+  const hasUserScrolledHistoryRef = useRef(false)
+  const suppressHistoryScrollLoadRef = useRef(false)
+  const loadMoreHistoryRef = useRef<() => void>(() => undefined)
+  const historyAnimationTimerRef = useRef<number | null>(null)
+  const [enteringHistoryMessageIds, setEnteringHistoryMessageIds] = useState<Set<string>>(() => new Set())
   const [nextCursor, setNextCursor] = useState(serverConversation.nextCursor)
   const [isLoadingMoreHistory, setIsLoadingMoreHistory] = useState(false)
+  const [historyLoadError, setHistoryLoadError] = useState(false)
   const [feedbackByMessageId, setFeedbackByMessageId] = useState<Record<string, AgentMessageFeedback | null>>(() =>
     buildMessageFeedbackById(serverConversation.messages),
   )
@@ -317,7 +407,7 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
   const { messages, sendMessage, status, error, stop, setMessages } = useChat({
     id: serverConversation.conversationId,
     transport,
-    messages: historyMessages,
+    messages: initialChatMessages,
   })
   const feedbackMutation = useMutation({
     mutationFn: (input: { messageId: string; rating: AgentMessageFeedbackRating }) => {
@@ -340,7 +430,7 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
   })
   const isSending = status === "submitted" || status === "streaming"
   const [visibleAssistantTextById, setVisibleAssistantTextById] = useState<Record<string, string>>(() =>
-    buildVisibleAssistantTextById(historyMessages),
+    buildVisibleAssistantTextById(initialChatMessages),
   )
   const assistantTextSignature = messages
     .filter((message) => message.role === "assistant" && message.id !== INITIAL_ASSISTANT_MESSAGE_ID)
@@ -366,15 +456,23 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
   const latestMessage = messages[messages.length - 1]
   const latestAssistantText =
     latestMessage?.role === "assistant" ? getMessageText(latestMessage).trim() : ""
-  const serverMessageSignature = serverConversation.messages
+  const serverMessageContentSignature = serverConversation.messages
     .map((message) => [
       message.id,
       message.role,
       message.createdAtMs,
+      message.status,
+      message.content,
+    ].join(":"))
+    .join("\n")
+  const serverMessageFeedbackSignature = serverConversation.messages
+    .map((message) => [
+      message.id,
       message.feedback?.rating ?? "none",
       message.feedback?.updatedAtMs ?? 0,
     ].join(":"))
     .join("\n")
+  const lastServerMessageContentSignatureRef = useRef(serverMessageContentSignature)
   const shouldShowTypingBubble =
     status === "submitted" ||
     (status === "streaming" && latestMessage?.role !== "assistant") ||
@@ -387,32 +485,96 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
   const [hasPendingConversationUpdate, setHasPendingConversationUpdate] = useState(false)
 
   useEffect(() => {
-    if (isSending) {
+    if (isSending || lastServerMessageContentSignatureRef.current === serverMessageContentSignature) {
       return
     }
 
-    const nextMessages = buildInitialMessages(serverConversation)
+    lastServerMessageContentSignatureRef.current = serverMessageContentSignature
+    const currentPages = historyPagesRef.current
+    const nextPages = replaceLatestHistoryPage(currentPages, serverConversation.messages)
+    const nextMessages = buildMessagesFromHistoryPages(nextPages, serverConversation)
 
-    setHistoryMessages(nextMessages)
+    historyPagesRef.current = nextPages
+    setHistoryPages(nextPages)
     setMessages(nextMessages)
-    setNextCursor(serverConversation.nextCursor)
-    setFeedbackByMessageId(buildMessageFeedbackById(serverConversation.messages))
-    setPersistedAssistantMessageIds(buildPersistedAssistantMessageIds(serverConversation.messages))
     setVisibleAssistantTextById(buildVisibleAssistantTextById(nextMessages))
-  }, [isSending, serverConversation, serverMessageSignature, setMessages])
+
+    if (currentPages.length === 1) {
+      setNextCursor(serverConversation.nextCursor)
+    }
+  }, [isSending, serverConversation, serverMessageContentSignature, setMessages])
+
+  useEffect(() => {
+    const latestFeedbackById = buildMessageFeedbackById(serverConversation.messages)
+    const latestAssistantMessageIds = buildPersistedAssistantMessageIds(serverConversation.messages)
+
+    setFeedbackByMessageId((current) => ({
+      ...current,
+      ...latestFeedbackById,
+    }))
+    setPersistedAssistantMessageIds((current) => {
+      const next = new Set(current)
+
+      for (const messageId of latestAssistantMessageIds) {
+        next.add(messageId)
+      }
+
+      return next
+    })
+  }, [serverConversation.messages, serverMessageFeedbackSignature])
 
   async function loadMoreHistory() {
-    if (!nextCursor || isLoadingMoreHistory || !conversation.id) {
+    if (!nextCursor || isLoadingMoreHistoryRef.current || isSending || !conversation.id) {
       return
     }
 
+    const requestedCursor = nextCursor
+    const scrollElement = conversationScrollContextRef.current?.scrollRef.current
+
+    if (scrollElement) {
+      pendingScrollRestoreRef.current = {
+        scrollHeight: scrollElement.scrollHeight,
+        scrollTop: scrollElement.scrollTop,
+      }
+    }
+
+    isLoadingMoreHistoryRef.current = true
     setIsLoadingMoreHistory(true)
+    setHistoryLoadError(false)
 
     try {
-      const response = await getAgentConversationMessages(conversation.id, nextCursor)
+      const response = await getAgentConversationMessages(conversation.id, requestedCursor)
       const olderMessages = response.messages.map(toUiMessage)
       const olderFeedbackById = buildMessageFeedbackById(response.messages)
       const olderAssistantMessageIds = buildPersistedAssistantMessageIds(response.messages)
+      const existingMessageIds = new Set(flattenHistoryPages(historyPagesRef.current).map((message) => message.id))
+      const uniquePersistedMessages = response.messages.filter((message) => !existingMessageIds.has(message.id))
+      const uniqueOlderMessages = olderMessages.filter((message) => !existingMessageIds.has(message.id))
+
+      if (uniquePersistedMessages.length > 0) {
+        suppressHistoryScrollLoadRef.current = true
+        const nextPages = [
+          {
+            id: requestedCursor,
+            messages: uniquePersistedMessages,
+          },
+          ...historyPagesRef.current,
+        ]
+
+        historyPagesRef.current = nextPages
+        setHistoryPages(nextPages)
+        setEnteringHistoryMessageIds(new Set(uniquePersistedMessages.map((message) => message.id)))
+
+        if (historyAnimationTimerRef.current !== null) {
+          window.clearTimeout(historyAnimationTimerRef.current)
+        }
+        historyAnimationTimerRef.current = window.setTimeout(() => {
+          setEnteringHistoryMessageIds(new Set())
+          historyAnimationTimerRef.current = null
+        }, 360)
+      } else {
+        pendingScrollRestoreRef.current = null
+      }
 
       setFeedbackByMessageId((current) => ({
         ...olderFeedbackById,
@@ -446,13 +608,107 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
 
         return changed ? next : current
       })
-      setHistoryMessages((current) => [...olderMessages, ...current])
-      setMessages((current) => [...olderMessages, ...current])
+      setMessages((current) => {
+        const currentMessageIds = new Set(current.map((message) => message.id))
+
+        return [
+          ...uniqueOlderMessages.filter((message) => !currentMessageIds.has(message.id)),
+          ...current,
+        ]
+      })
       setNextCursor(response.nextCursor)
+    } catch {
+      pendingScrollRestoreRef.current = null
+      setHistoryLoadError(true)
     } finally {
+      isLoadingMoreHistoryRef.current = false
       setIsLoadingMoreHistory(false)
     }
   }
+
+  loadMoreHistoryRef.current = () => {
+    void loadMoreHistory()
+  }
+
+  useLayoutEffect(() => {
+    const pendingScrollRestore = pendingScrollRestoreRef.current
+    const scrollElement = conversationScrollContextRef.current?.scrollRef.current
+
+    if (!pendingScrollRestore || !scrollElement) {
+      return
+    }
+
+    const addedHeight = scrollElement.scrollHeight - pendingScrollRestore.scrollHeight
+
+    scrollElement.scrollTop = pendingScrollRestore.scrollTop + Math.max(0, addedHeight)
+    pendingScrollRestoreRef.current = null
+    window.requestAnimationFrame(() => {
+      suppressHistoryScrollLoadRef.current = false
+    })
+  }, [historyPages])
+
+  useEffect(() => {
+    const scrollElement = conversationScrollContextRef.current?.scrollRef.current
+
+    if (!scrollElement) {
+      return
+    }
+
+    canLoadMoreOnScrollRef.current = false
+    const animationFrame = window.requestAnimationFrame(() => {
+      canLoadMoreOnScrollRef.current = true
+    })
+    const requestOlderHistory = () => {
+      if (
+        !canLoadMoreOnScrollRef.current ||
+        !hasUserScrolledHistoryRef.current ||
+        suppressHistoryScrollLoadRef.current ||
+        scrollElement.scrollTop > 96
+      ) {
+        return
+      }
+
+      loadMoreHistoryRef.current()
+    }
+    const handleWheel = (event: WheelEvent) => {
+      if (event.deltaY < 0) {
+        hasUserScrolledHistoryRef.current = true
+        requestOlderHistory()
+      }
+    }
+    let touchStartY: number | null = null
+    const handleTouchStart = (event: TouchEvent) => {
+      touchStartY = event.touches[0]?.clientY ?? null
+    }
+    const handleTouchMove = (event: TouchEvent) => {
+      const currentY = event.touches[0]?.clientY
+
+      if (touchStartY !== null && currentY !== undefined && currentY > touchStartY + 12) {
+        hasUserScrolledHistoryRef.current = true
+        requestOlderHistory()
+        touchStartY = currentY
+      }
+    }
+
+    scrollElement.addEventListener("scroll", requestOlderHistory, { passive: true })
+    scrollElement.addEventListener("wheel", handleWheel, { passive: true })
+    scrollElement.addEventListener("touchstart", handleTouchStart, { passive: true })
+    scrollElement.addEventListener("touchmove", handleTouchMove, { passive: true })
+
+    return () => {
+      window.cancelAnimationFrame(animationFrame)
+      scrollElement.removeEventListener("scroll", requestOlderHistory)
+      scrollElement.removeEventListener("wheel", handleWheel)
+      scrollElement.removeEventListener("touchstart", handleTouchStart)
+      scrollElement.removeEventListener("touchmove", handleTouchMove)
+    }
+  }, [serverConversation.conversationId])
+
+  useEffect(() => () => {
+    if (historyAnimationTimerRef.current !== null) {
+      window.clearTimeout(historyAnimationTimerRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     function reloadLlmStore() {
@@ -537,13 +793,16 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
   }, [hasPendingConversationUpdate, onConversationUpdated, status])
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col bg-slate-50/70">
-      <div className="flex min-h-16 items-center justify-between gap-4 border-b bg-white px-4 py-3 sm:px-6">
+    <section
+      aria-busy={isConversationTransitioning}
+      className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white"
+    >
+      <div className="sticky top-0 z-10 flex min-h-16 items-center justify-between gap-4 border-b border-[#e3dbd0] bg-[#fbfaf7] px-4 py-2.5 sm:px-6">
         <div className="flex min-w-0 items-center gap-3">
           {onOpenConversationList ? (
             <button
               aria-label="选择对话"
-              className="flex size-8 shrink-0 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 lg:hidden"
+              className="flex size-8 shrink-0 items-center justify-center rounded-full text-[#897d6f] hover:bg-[#ebe4da] lg:hidden"
               onClick={onOpenConversationList}
               title="选择对话"
               type="button"
@@ -551,44 +810,70 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
               <PanelLeftOpen className="size-4" />
             </button>
           ) : null}
-          <AgentAvatar
-            className="size-9 rounded-md bg-slate-950 text-xs text-white"
-            fallbackClassName="bg-slate-950 text-white"
-            imageKey={conversation.imageKey}
-            name={conversation.name}
-          />
+          <div className="relative shrink-0">
+            <AgentAvatar
+              className="size-9 rounded-md bg-[#27353a] text-xs text-white"
+              fallbackClassName="bg-[#27353a] text-white"
+              imageKey={conversation.imageKey}
+              name={conversation.name}
+            />
+            <span className="absolute -right-0.5 -bottom-0.5 size-2.5 rounded-full border-2 border-[#fbfaf7] bg-[#7ca58b]" />
+          </div>
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-2">
-              <h2 className="truncate text-base font-semibold text-slate-900">{conversation.name}</h2>
-              <span className="hidden shrink-0 text-xs text-slate-400 sm:inline">{conversation.handle}</span>
+              <h2 className="truncate text-sm font-semibold text-[#27353a]">{conversation.name}</h2>
+              <span className="hidden shrink-0 items-center gap-1 text-[10px] text-[#9a8d7e] sm:inline-flex">
+                <AtSign className="size-3 text-[#a37b4f]" />
+                {conversation.handle}
+              </span>
             </div>
-            <p className="mt-0.5 truncate text-xs text-slate-500">{conversation.headline}</p>
+            <div className="mt-0.5 flex min-w-0 items-center gap-2 text-[10px] text-[#687971]">
+              <span className="flex min-w-0 items-center gap-1.5">
+                <Sparkles className="size-3 shrink-0 text-[#a37b4f]" />
+                <span className="truncate">{conversation.headline}</span>
+              </span>
+              <span className="hidden shrink-0 items-center gap-1 text-[#9a8d7e] sm:inline-flex">
+                <Heart className="size-3 text-[#b27e75]" />
+                {conversation.relationship}
+              </span>
+            </div>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <span className="hidden rounded-full bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-600 sm:inline-flex">{conversation.relationship}</span>
-          <span className="rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-medium text-emerald-700">{conversation.status}</span>
+          <span className="inline-flex items-center gap-1.5 rounded-md bg-[#e5eee8] px-2 py-1 text-[10px] font-medium text-[#426453]">
+            <CircleDot className="size-3 fill-current" />
+            {isConversationTransitioning ? "切换中" : conversation.status}
+          </span>
         </div>
       </div>
 
-      <Conversation className="min-h-0">
+      <Conversation
+        className="min-h-0 overscroll-contain"
+        contextRef={conversationScrollContextRef}
+        initial="instant"
+        resize="instant"
+      >
         <ConversationContent className="mx-auto w-full max-w-3xl gap-6 px-4 py-7 sm:px-6">
-          <div className="flex items-center justify-center">
-            {nextCursor ? (
-              <button
-                className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                disabled={isLoadingMoreHistory}
-                onClick={() => {
-                  void loadMoreHistory()
-                }}
-                type="button"
-              >
-                <Clock3 className="size-3.5 text-slate-500" />
-                {isLoadingMoreHistory ? "正在加载历史" : "加载更早消息"}
-              </button>
-            ) : (
-              <span className="text-xs text-slate-400">更早的对话会显示在这里</span>
-            )}
+          <div className="flex h-8 items-center justify-center" aria-live="polite">
+            <span
+              className={cn(
+                "inline-flex items-center gap-2 text-[11px] font-medium text-[#8d9894]",
+                isLoadingMoreHistory && "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:duration-200",
+              )}
+            >
+              {isLoadingMoreHistory ? (
+                <LoaderCircle className="size-3.5 animate-spin text-[#9a7b59]" />
+              ) : (
+                <Clock3 className="size-3.5 text-[#9a7b59]" />
+              )}
+              {historyLoadError
+                ? "历史消息读取失败"
+                : isLoadingMoreHistory
+                  ? "正在读取更早消息"
+                  : nextCursor
+                    ? "更早消息"
+                    : "已显示最早消息"}
+            </span>
           </div>
 
           {messages.map((message) => {
@@ -613,13 +898,15 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
                 className={cn(
                   "flex w-full items-start gap-3",
                   isUser ? "justify-end" : "justify-start",
+                  enteringHistoryMessageIds.has(message.id) &&
+                    "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-top-2 motion-safe:duration-300",
                 )}
                 key={message.id}
               >
                 {!isUser ? (
                   <AgentAvatar
-                    className="mt-5 size-8 rounded-md bg-slate-100 text-xs text-slate-700"
-                    fallbackClassName="bg-slate-100 text-slate-700"
+                    className="mt-5 size-8 rounded-md border-[#ded5c9] bg-[#eee8de] text-xs text-[#53665f]"
+                    fallbackClassName="bg-[#eee8de] text-[#53665f]"
                     imageKey={conversation.imageKey}
                     name={conversation.name}
                   />
@@ -631,21 +918,18 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
                     isUser ? "items-end" : "items-start",
                   )}
                 >
-                  <div
-                    className={cn(
-                      "flex items-center gap-2 text-xs font-medium",
-                      isUser ? "text-slate-500" : "text-slate-500",
-                    )}
-                  >
-                    <span>{isUser ? "你" : conversation.name}</span>
-                  </div>
+                  {!isUser ? (
+                    <div className="flex items-center gap-2 text-xs font-medium text-[#897d6f]">
+                      <span>{conversation.name}</span>
+                    </div>
+                  ) : null}
 
                   <div
                     className={cn(
                       "relative border px-4 py-3 text-sm leading-6",
                       isUser
-                        ? "rounded-md border-slate-900 bg-slate-950 text-white"
-                        : "rounded-md border-slate-200 bg-white text-slate-800",
+                        ? "rounded-md border-[#27353a] bg-[#27353a] text-[#fbfaf7] shadow-[0_8px_20px_rgba(39,53,58,0.12)] before:absolute before:top-3 before:-right-2 before:h-0 before:w-0 before:border-y-[6px] before:border-y-transparent before:border-l-[8px] before:border-l-[#27353a]"
+                        : "rounded-md border-[#e3dbd0] bg-[#fbfaf7] text-[#27353a] shadow-[0_8px_20px_rgba(53,44,34,0.04)] before:absolute before:top-2 before:-left-2 before:h-0 before:w-0 before:border-y-[6px] before:border-y-transparent before:border-r-[8px] before:border-r-[#e3dbd0] after:absolute after:top-[9px] after:-left-[6px] after:h-0 after:w-0 after:border-y-[5px] after:border-y-transparent after:border-r-[7px] after:border-r-[#fbfaf7]",
                     )}
                   >
                     <MessageResponse
@@ -704,7 +988,7 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
                 </div>
 
                 {isUser ? (
-                  <span className="mt-6 shrink-0">
+                  <span className="mt-0.5 shrink-0 [&>img]:!rounded-md [&>span]:!rounded-md">
                     <UserAvatar user={profile} size="sm" />
                   </span>
                 ) : null}
@@ -713,7 +997,7 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
           })}
           {shouldShowTypingBubble ? <TypingBubble conversation={conversation} /> : null}
           {error ? (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-destructive">
+            <div className="rounded-xl border border-[#e8c9c0] bg-[#fff4f1] px-3 py-2 text-sm text-[#a14e43]">
               {formatChatErrorMessage(error)}
             </div>
           ) : null}
@@ -721,9 +1005,9 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
         <ConversationScrollButton />
       </Conversation>
 
-      <div className="border-t bg-white px-4 py-4 sm:px-6">
+      <div className="bg-[#f7f8f6] px-4 pb-4 pt-3 sm:px-6">
         <PromptInput
-          className="mx-auto max-w-3xl border border-slate-200 bg-white"
+          className="mx-auto max-w-3xl [&_[data-slot=input-group]]:rounded-lg [&_[data-slot=input-group]]:border-[#d9dfdc] [&_[data-slot=input-group]]:bg-[#fffefa] [&_[data-slot=input-group]]:shadow-[0_10px_28px_rgba(39,53,58,0.06)] [&_[data-slot=input-group]]:focus-within:border-[#9baba4] [&_[data-slot=input-group]]:focus-within:ring-2 [&_[data-slot=input-group]]:focus-within:ring-[#dce5e0]"
           onSubmit={(message) => {
             const text = message.text.trim()
 
@@ -735,12 +1019,12 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
             setDraftMessage("")
           }}
         >
-          <PromptInputHeader className="border-b bg-slate-50/70 px-3 py-2">
-            <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto">
+          <PromptInputHeader className="bg-transparent px-3 pb-1 pt-2.5">
+            <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {quickPrompts.map((prompt) => (
                 <button
-                  className="h-7 shrink-0 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={isSending}
+                  className="h-7 shrink-0 rounded-md bg-[#f1f3f1] px-2.5 text-[11px] font-medium text-[#68736f] transition-colors hover:bg-[#e7ece9] hover:text-[#27353a] disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={isSending || isConversationTransitioning}
                   key={prompt}
                   onClick={() => setDraftMessage(prompt)}
                   type="button"
@@ -751,18 +1035,18 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
             </div>
           </PromptInputHeader>
           <PromptInputTextarea
-            className="max-h-44 min-h-20 px-3 py-3 text-sm"
-            disabled={isSending}
+            className="max-h-44 min-h-16 px-4 py-2.5 text-sm leading-6 placeholder:text-[#a2aaa7]"
+            disabled={isSending || isConversationTransitioning}
             onChange={(event) => setDraftMessage(event.currentTarget.value)}
-            placeholder="输入想说的话，或先选择上方快捷提示..."
+            placeholder="输入消息..."
             value={draftMessage}
           />
-          <PromptInputFooter className="border-t bg-slate-50/70 px-3 py-2">
-            <PromptInputTools className="min-w-0 gap-2 text-xs text-muted-foreground">
+          <PromptInputFooter className="bg-transparent px-3 pb-2.5 pt-1">
+            <PromptInputTools className="min-w-0 gap-2 text-[11px] text-[#7d8985]">
               <label className="flex min-w-0 items-center gap-1.5">
-                <RadioTower className="size-3.5" />
+                <RadioTower className="size-3.5 text-[#86958f]" />
                 <PromptInputSelect
-                  disabled={isSending}
+                  disabled={isSending || isConversationTransitioning}
                   onValueChange={(value) => {
                     selectLocalLlmConfig(value === "platform-default" ? null : value)
                     setLlmStore(readLocalLlmConfigStore())
@@ -771,12 +1055,12 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
                 >
                   <PromptInputSelectTrigger
                     aria-label="选择本次聊天使用的 LLM"
-                    className="h-7 max-w-56 rounded-md border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50 data-placeholder:text-slate-500"
+                    className="h-7 max-w-56 rounded-md border-0 bg-[#f1f3f1] px-2.5 text-[11px] font-medium text-[#68736f] hover:bg-[#e7ece9] data-placeholder:text-[#9aa39f]"
                     size="sm"
                   >
                     <PromptInputSelectValue placeholder="平台默认" />
                   </PromptInputSelectTrigger>
-                  <PromptInputSelectContent className="min-w-56 rounded-md border border-slate-200 shadow-none">
+                  <PromptInputSelectContent className="min-w-56 rounded-lg border border-[#d9dfdc] bg-[#fffefa] shadow-[0_12px_30px_rgba(39,53,58,0.10)]">
                     <PromptInputSelectItem value="platform-default">
                       平台默认
                     </PromptInputSelectItem>
@@ -790,8 +1074,8 @@ function InboxChatInner({ conversation, serverConversation, onConversationUpdate
               </label>
             </PromptInputTools>
             <PromptInputSubmit
-              className="rounded-md"
-              disabled={isSending}
+              className="size-8 rounded-md bg-[#27353a] text-white hover:bg-[#35484c] disabled:bg-[#c8cfcc]"
+              disabled={isSending || isConversationTransitioning}
               onStop={stop}
               status={status}
             />
@@ -809,25 +1093,62 @@ export function InboxChat({ conversation, onConversationUpdated, onOpenConversat
     queryFn: () => getAgentConversation(conversation.id ?? ""),
     enabled: Boolean(conversation.id),
   })
+  const [displayedChat, setDisplayedChat] = useState<InboxChatInnerProps | null>(null)
+  const currentConversationData =
+    conversationQuery.data?.agentId === conversation.id ? conversationQuery.data : null
 
-  if (conversationQuery.isLoading) {
+  useEffect(() => {
+    if (!currentConversationData) {
+      return
+    }
+
+    setDisplayedChat((current) => {
+      if (
+        current?.conversation === conversation &&
+        current?.serverConversation === currentConversationData
+      ) {
+        return current
+      }
+
+      return {
+        conversation,
+        serverConversation: currentConversationData,
+      }
+    })
+  }, [conversation, currentConversationData])
+
+  const chat = currentConversationData
+    ? { conversation, serverConversation: currentConversationData }
+    : displayedChat
+  const isConversationTransitioning = Boolean(chat && chat.conversation.id !== conversation.id)
+
+  if (!chat && conversationQuery.isLoading) {
     return <InboxChatLoadingPanel conversation={conversation} />
   }
 
-  if (conversationQuery.isError || !conversationQuery.data) {
+  if (!chat && (conversationQuery.isError || !conversationQuery.data)) {
     return <InboxChatErrorPanel conversation={conversation} error={conversationQuery.error} />
+  }
+
+  if (chat && isConversationTransitioning && conversationQuery.isError) {
+    return <InboxChatErrorPanel conversation={conversation} error={conversationQuery.error} />
+  }
+
+  if (!chat) {
+    return <InboxChatLoadingPanel conversation={conversation} />
   }
 
   return (
     <InboxChatInner
-      conversation={conversation}
-      key={conversationQuery.data.conversationId}
+      conversation={chat.conversation}
+      key={chat.serverConversation.conversationId}
+      isConversationTransitioning={isConversationTransitioning}
       onOpenConversationList={onOpenConversationList}
       onConversationUpdated={() => {
-        void queryClient.invalidateQueries({ queryKey: ["agent-conversation", conversation.id] })
+        void queryClient.invalidateQueries({ queryKey: ["agent-conversation", chat.conversation.id] })
         onConversationUpdated?.()
       }}
-      serverConversation={conversationQuery.data}
+      serverConversation={chat.serverConversation}
     />
   )
 }

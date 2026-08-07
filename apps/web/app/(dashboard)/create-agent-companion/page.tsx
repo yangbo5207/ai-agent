@@ -493,46 +493,43 @@ export default function CreateAgentCompanionPage() {
   }
 
   return (
-    <DashboardShell title="创建 Agent 伴侣">
-      <main className="min-h-[calc(100vh-4rem)] bg-slate-50/70">
-        <section className="border-b border-slate-200 bg-white">
-          <div className="mx-auto flex max-w-[90rem] flex-col gap-5 px-5 py-6 lg:px-8 lg:py-7 xl:flex-row xl:items-end xl:justify-between">
-            <div className="min-w-0">
-              <p className="text-xs font-medium text-slate-400">AGENT COMPANION</p>
-              <h1 className="mt-2 text-2xl font-semibold text-slate-950">创建 Agent 伴侣</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                从角色设定到互动边界，依次完善一个稳定、清晰的陪伴角色。
-              </p>
-            </div>
-
-            <div className="flex items-center gap-4 border-t border-slate-200 pt-4 xl:border-t-0 xl:pt-0">
-              <div className="min-w-0">
-                <p className="text-xs font-medium text-slate-400">完成度</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">
-                  {completedCount} / {completionChecks.length} 项已完成
-                </p>
-              </div>
-              <div className="h-8 w-px bg-slate-200" />
-              <div className="min-w-0">
-                <p className="text-xs font-medium text-slate-400">当前状态</p>
-                <p className="mt-1 text-sm font-medium text-slate-800">
-                  {form.status === "draft" ? "保存为草稿" : "创建后可聊天"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mx-auto max-w-[90rem] px-5 pb-6 lg:px-8">
-            <div className="border-t border-slate-200 pt-5">
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(24rem,0.9fr)] lg:items-end">
-                <div>
-                  <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                    <Sparkles className="size-4 text-slate-400" />
+    <DashboardShell
+      headerRight={
+        <div className="flex max-w-full flex-wrap items-center gap-2">
+          <span className="inline-flex h-7 items-center gap-1.5 rounded-full border border-[#d9dfdc] bg-[#fbfaf7] px-2.5 text-[10px] font-medium text-[#53615e]">
+            <BadgeCheck className="size-3 text-[#a37b4f]" />
+            <span className="text-[#9a8d7e]">完成度</span>
+            <span className="font-semibold text-[#27353a]">{completedCount} / {completionChecks.length}</span>
+          </span>
+          <span className="inline-flex h-7 items-center gap-1.5 rounded-full border border-[#d9dfdc] bg-[#fbfaf7] px-2.5 text-[10px] font-medium text-[#53615e]">
+            <Sparkles className="size-3 text-[#a37b4f]" />
+            <span className="text-[#9a8d7e]">状态</span>
+            <span className="font-semibold text-[#27353a]">{form.status === "draft" ? "草稿" : "可聊天"}</span>
+          </span>
+          <span className="inline-flex h-7 items-center gap-1.5 rounded-full border border-[#d9dfdc] bg-[#fbfaf7] px-2.5 text-[10px] font-medium text-[#53615e]">
+            <ImagePlus className="size-3 text-[#a37b4f]" />
+            <span className="text-[#9a8d7e]">形象</span>
+            <span className="font-semibold text-[#27353a]">{form.imageKey ? "已上传" : "未上传"}</span>
+          </span>
+        </div>
+      }
+      title="创建 Agent 伴侣"
+    >
+      <main className="flex h-full min-h-0 flex-col overflow-hidden bg-white">
+        <section className="grid min-h-0 flex-1 overflow-y-auto rounded-xl border border-[#dfe3e1] bg-white p-0 xl:h-full xl:overflow-hidden xl:grid-cols-[20rem_minmax(0,1fr)] xl:grid-rows-[minmax(0,1fr)] xl:items-start">
+          <div className="min-w-0 space-y-5 px-4 pb-5 pt-5 sm:px-6 lg:px-8 xl:col-start-2 xl:row-start-1 xl:mx-auto xl:h-full xl:min-h-0 xl:w-full xl:max-w-[68rem] xl:overflow-y-auto">
+            <div className="rounded-lg border border-[#dfe3e1] bg-[#fbfaf7] px-4 py-4 sm:px-5">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                <div className="min-w-0">
+                  <p className="flex items-center gap-2 text-sm font-semibold text-[#27353a]">
+                    <Sparkles className="size-4 text-[#a37b4f]" />
                     一键生成 Agent
                   </p>
-                  <p className="mt-1 text-xs leading-5 text-slate-500">自动生成完整角色设定与角色形象，结果不会直接保存。</p>
+                  <p className="mt-1 text-xs leading-5 text-[#89928f]">
+                    自动生成完整角色设定与角色形象，结果不会直接保存。
+                  </p>
                 </div>
-                <div className="flex flex-col gap-2 sm:flex-row">
+                <div className="flex flex-col gap-2 sm:flex-row lg:w-[34rem]">
                   <Input
                     disabled={isGeneratingAgent}
                     maxLength={800}
@@ -560,23 +557,21 @@ export default function CreateAgentCompanionPage() {
               </div>
 
               {agentGenerationNotice ? (
-                <p className={cn(
-                  "mt-4 border px-3 py-2 text-sm leading-6",
-                  agentGenerationNotice.type === "success"
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                    : "border-red-200 bg-red-50 text-red-600",
-                )}>
+                <p
+                  className={cn(
+                    "mt-4 border px-3 py-2 text-sm leading-6",
+                    agentGenerationNotice.type === "success"
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                      : "border-red-200 bg-red-50 text-red-600",
+                  )}
+                >
                   {agentGenerationNotice.text}
                 </p>
               ) : null}
             </div>
-          </div>
-        </section>
 
-        <section className="mx-auto grid max-w-[90rem] gap-8 px-5 py-8 lg:px-8 xl:grid-cols-[minmax(0,1fr)_20rem] xl:items-start">
-          <div className="min-w-0 space-y-8">
-            <section aria-labelledby="agent-profile-heading" className="border border-slate-200 bg-white px-5 py-6 sm:px-7">
-              <div className="flex items-start gap-4 border-b border-slate-200 pb-5">
+            <section aria-labelledby="agent-profile-heading" className="overflow-hidden rounded-lg border border-[#dfe3e1] bg-[#fffefa] px-5 py-5 sm:px-7">
+              <div className="flex items-start gap-4 border-b border-[#e3e6e4] pb-4">
                 <span className="pt-0.5 text-xs font-medium text-slate-400">01</span>
                 <div>
                   <h2 className="text-base font-semibold text-slate-900" id="agent-profile-heading">角色资料</h2>
@@ -712,8 +707,8 @@ export default function CreateAgentCompanionPage() {
               </div>
             </section>
 
-            <section aria-labelledby="agent-world-heading" className="border border-slate-200 bg-white px-5 py-6 sm:px-7">
-              <div className="flex items-start gap-4 border-b border-slate-200 pb-5">
+            <section aria-labelledby="agent-world-heading" className="overflow-hidden rounded-lg border border-[#dfe3e1] bg-[#fffefa] px-5 py-5 sm:px-7">
+              <div className="flex items-start gap-4 border-b border-[#e3e6e4] pb-4">
                 <span className="pt-0.5 text-xs font-medium text-slate-400">02</span>
                 <div>
                   <h2 className="text-base font-semibold text-slate-900" id="agent-world-heading">角色世界</h2>
@@ -744,8 +739,8 @@ export default function CreateAgentCompanionPage() {
               </div>
             </section>
 
-            <section aria-labelledby="agent-behavior-heading" className="border border-slate-200 bg-white px-5 py-6 sm:px-7">
-              <div className="flex items-start gap-4 border-b border-slate-200 pb-5">
+            <section aria-labelledby="agent-behavior-heading" className="overflow-hidden rounded-lg border border-[#dfe3e1] bg-[#fffefa] px-5 py-5 sm:px-7">
+              <div className="flex items-start gap-4 border-b border-[#e3e6e4] pb-4">
                 <span className="pt-0.5 text-xs font-medium text-slate-400">03</span>
                 <div>
                   <h2 className="text-base font-semibold text-slate-900" id="agent-behavior-heading">互动方式</h2>
@@ -783,8 +778,8 @@ export default function CreateAgentCompanionPage() {
               </div>
             </section>
 
-            <section aria-labelledby="agent-opening-heading" className="border border-slate-200 bg-white px-5 py-6 sm:px-7">
-              <div className="flex items-start gap-4 border-b border-slate-200 pb-5">
+            <section aria-labelledby="agent-opening-heading" className="overflow-hidden rounded-lg border border-[#dfe3e1] bg-[#fffefa] px-5 py-5 sm:px-7">
+              <div className="flex items-start gap-4 border-b border-[#e3e6e4] pb-4">
                 <span className="pt-0.5 text-xs font-medium text-slate-400">04</span>
                 <div>
                   <h2 className="text-base font-semibold text-slate-900" id="agent-opening-heading">默认开场</h2>
@@ -808,9 +803,9 @@ export default function CreateAgentCompanionPage() {
             </section>
           </div>
 
-          <aside className="xl:sticky xl:top-20">
-            <section className="overflow-hidden border border-slate-200 bg-white">
-              <div className="relative aspect-[2/3] bg-slate-100 p-4">
+          <aside className="min-w-0 xl:col-start-1 xl:row-start-1 xl:h-full xl:min-h-0 xl:overflow-y-auto xl:border-r xl:border-[#e3e6e4]">
+            <section className="overflow-hidden bg-[#fffefa] xl:min-h-full">
+              <div className="relative aspect-[2/3] bg-[#f7f8f6] p-4">
                 {imagePreviewUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img alt={form.name} className="absolute inset-0 size-full object-cover" src={imagePreviewUrl} />
@@ -822,7 +817,7 @@ export default function CreateAgentCompanionPage() {
                   </span>
                 </div>
                 {!imagePreviewUrl ? (
-                  <div className="absolute inset-0 flex items-center justify-center text-slate-300">
+                  <div className="absolute inset-0 flex items-center justify-center text-[#c8cecb]">
                     <Bot className="size-10" />
                   </div>
                 ) : null}

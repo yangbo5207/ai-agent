@@ -8,7 +8,6 @@ import {
   Bot,
   CheckCircle2,
   CirclePlus,
-  Clock3,
   Heart,
   MessageCircle,
   MoreHorizontal,
@@ -36,32 +35,8 @@ const tileClassNames = [
   "bg-[#ececec]",
 ]
 
-const spanClassNamesByGroupSize: Record<number, string[]> = {
-  1: ["sm:col-span-2 2xl:col-span-4"],
-  2: ["2xl:col-span-2", "2xl:col-span-2"],
-  3: ["sm:col-span-2 2xl:col-span-2", "", ""],
-  4: ["", "", "", ""],
-  5: ["sm:col-span-2 2xl:col-span-2", "", "", "2xl:col-span-2", "2xl:col-span-2"],
-  6: [
-    "sm:col-span-2 2xl:col-span-2",
-    "",
-    "",
-    "",
-    "2xl:col-span-2",
-    "sm:col-span-2 2xl:col-span-1",
-  ],
-}
-
 function getTileClassName(index: number) {
   return tileClassNames[index % tileClassNames.length]!
-}
-
-function getSpanClassName(index: number, total: number) {
-  const groupIndex = index % 6
-  const groupStart = index - groupIndex
-  const groupSize = Math.min(6, total - groupStart)
-
-  return cn("row-span-5", spanClassNamesByGroupSize[groupSize]?.[groupIndex])
 }
 
 function getStatusTone(agent: MyAgentInboxItem) {
@@ -134,13 +109,10 @@ function EmptyCompanions() {
 function CompanionsLoading() {
   return (
     <section className="overflow-hidden rounded-2xl">
-      <div className="grid auto-rows-[88px] grid-flow-dense grid-cols-1 gap-1 sm:grid-cols-2 2xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {[0, 1, 2, 3, 4, 5].map((item) => (
           <div
-            className={cn(
-              getSpanClassName(item, 6),
-              "animate-pulse bg-slate-200",
-            )}
+            className="aspect-[2/3] w-full animate-pulse bg-slate-200"
             key={item}
           />
         ))}
@@ -193,8 +165,6 @@ export default function CompanionsPage() {
     () => companions.filter((agent) => matchesFilter(agent, activeFilter) && matchesSearch(agent, searchTerm)),
     [activeFilter, companions, searchTerm],
   )
-  const hasActiveSearchOrFilter = Boolean(searchTerm.trim()) || activeFilter !== "all"
-  const selectedCompanion = filteredCompanions[0] ?? (hasActiveSearchOrFilter ? null : companions[0] ?? null)
   const stats = {
     total: agentInboxQuery.data?.total ?? companions.length,
     published: agentInboxQuery.data?.published ?? companions.filter((item) => item.agentStatus === "published").length,
@@ -210,20 +180,9 @@ export default function CompanionsPage() {
     { label: "可聊天", value: String(stats.published), icon: Heart },
     { label: "草稿", value: String(stats.draft), icon: Bot },
   ]
-  const companionMeta = selectedCompanion
-    ? [
-        { label: "最近互动", value: selectedCompanion.lastActive, icon: Clock3 },
-        { label: "状态", value: selectedCompanion.status, icon: ShieldCheck },
-        { label: "节奏", value: selectedCompanion.rhythm, icon: Sparkles },
-      ]
-    : []
-  const recentActivity = companions
-    .slice(0, 3)
-    .map((agent) => `${agent.name}：${getConversationPreview(agent)}`)
-
   return (
     <DashboardShell title="我的伴侣">
-      <main className="min-h-[calc(100vh-4rem)] bg-slate-50/70">
+      <main className="min-h-full bg-[#fffefa]">
         <section className="bg-white px-5 pt-5 lg:px-8">
           <div className="border-b border-slate-200 pb-5">
             <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_21rem] lg:items-end">
@@ -324,7 +283,7 @@ export default function CompanionsPage() {
             </Button>
           </div>
 
-          <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="mt-5">
             {agentInboxQuery.isLoading ? (
               <CompanionsLoading />
             ) : agentInboxQuery.isError ? (
@@ -335,13 +294,12 @@ export default function CompanionsPage() {
               <FilteredCompanionsEmpty />
             ) : (
               <section className="overflow-hidden rounded-2xl">
-                <div className="grid auto-rows-[88px] grid-flow-dense grid-cols-1 gap-1 sm:grid-cols-2 2xl:grid-cols-4">
+                <div className="grid grid-cols-1 gap-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                   {filteredCompanions.map((companion, index) => (
                     <Link
                       className={cn(
-                        getSpanClassName(index, filteredCompanions.length),
                         getTileClassName(index),
-                        "group relative flex min-h-0 flex-col overflow-hidden p-4 text-slate-950",
+                        "group relative flex aspect-[2/3] w-full min-w-0 flex-col overflow-hidden p-4 text-slate-950",
                       )}
                       href={`/agents/detail?agentId=${encodeURIComponent(companion.id)}`}
                       key={companion.id}
@@ -352,9 +310,9 @@ export default function CompanionsPage() {
                         imageKey={companion.imageKey}
                         name={companion.name}
                       />
-                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.62),transparent_12rem),linear-gradient(180deg,transparent_45%,rgba(255,255,255,0.52)_100%)]" />
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.62),transparent_12rem),linear-gradient(180deg,transparent_42%,rgba(255,255,255,0.58)_100%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100" />
 
-                      <div className="relative flex translate-y-2 items-start justify-between gap-3 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+                      <div className="relative flex translate-y-2 items-start justify-between gap-3 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
                         <div className="flex min-w-0 items-center gap-2">
                           <span className="max-w-full truncate rounded-full border border-white/70 bg-white/55 px-2.5 py-1 text-[11px] font-medium text-slate-700">
                             我创建的
@@ -370,7 +328,7 @@ export default function CompanionsPage() {
                         </span>
                       </div>
 
-                      <div className="relative mt-auto">
+                      <div className="relative mt-auto translate-y-2 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100">
                         <div className="mb-3 flex items-center gap-2">
                           <span className={cn("rounded-full border px-2 py-1 text-[11px] font-medium", getStatusTone(companion))}>
                             {companion.status}
@@ -383,17 +341,12 @@ export default function CompanionsPage() {
                         </div>
 
                         <h2 className="truncate text-lg font-semibold tracking-tight text-slate-950">{companion.name}</h2>
-                        <p className="mt-1 line-clamp-2 max-w-md text-sm leading-6 text-slate-600">
-                          {companion.headline}
-                        </p>
+                        <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-600">{companion.headline}</p>
 
-                        <div className="mt-3 flex translate-y-2 items-center justify-between gap-3 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+                        <div className="mt-3 flex items-center justify-between gap-3">
                           <div className="flex min-w-0 flex-wrap gap-1.5">
                             {[companion.relationship, companion.topic].map((tag) => (
-                              <span
-                                className="rounded-full border border-white/70 bg-white/45 px-2 py-1 text-[11px] font-medium text-slate-700"
-                                key={tag}
-                              >
+                              <span className="max-w-32 truncate rounded-full border border-white/70 bg-white/45 px-2 py-1 text-[11px] font-medium text-slate-700" key={tag}>
                                 {tag}
                               </span>
                             ))}
@@ -409,83 +362,6 @@ export default function CompanionsPage() {
               </section>
             )}
 
-            <aside className="grid content-start gap-5">
-              {selectedCompanion ? (
-                <section className="overflow-hidden rounded-2xl bg-white">
-                  <div className={cn("relative overflow-hidden p-4", getTileClassName(0))}>
-                    <AgentAvatar
-                      className="absolute inset-0 size-full rounded-none border-0 bg-transparent"
-                      fallbackClassName={cn(getTileClassName(0), "text-3xl text-slate-500")}
-                      imageKey={selectedCompanion.imageKey}
-                      name={selectedCompanion.name}
-                    />
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.62),transparent_12rem),linear-gradient(180deg,transparent_40%,rgba(255,255,255,0.58)_100%)]" />
-                    <div className="relative flex items-center justify-between gap-3">
-                      <span className="rounded-full border border-white/70 bg-white/50 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                        当前选中
-                      </span>
-                      <span className="rounded-full border border-white/70 bg-white/50 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                        {selectedCompanion.status}
-                      </span>
-                    </div>
-
-                    <div className="relative mt-16 border-t border-white/70 pt-4">
-                      <p className="truncate text-lg font-semibold tracking-tight text-slate-900">
-                        {selectedCompanion.name}
-                      </p>
-                      <p className="mt-1 line-clamp-2 text-sm leading-6 text-slate-600">
-                        {selectedCompanion.headline}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-3 border-t border-slate-200">
-                    {companionMeta.map((item, index) => {
-                      const Icon = item.icon
-
-                      return (
-                        <div
-                          className={index === 2 ? "px-3 py-3" : "border-r border-slate-200 px-3 py-3"}
-                          key={item.label}
-                        >
-                          <p className="flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
-                            <Icon className="size-3.5" />
-                            {item.label}
-                          </p>
-                          <p className="mt-1 truncate text-sm font-medium text-slate-700">{item.value}</p>
-                        </div>
-                      )
-                    })}
-                  </div>
-
-                  <div className="border-t border-slate-200 p-4">
-                    <Button asChild className="w-full rounded-full" variant="outline">
-                      <Link href={`/agents/detail?agentId=${encodeURIComponent(selectedCompanion.id)}`}>
-                        查看并编辑详情
-                      </Link>
-                    </Button>
-                  </div>
-                </section>
-              ) : null}
-
-              <section className="rounded-2xl bg-white p-4">
-                <div className="flex items-center justify-between gap-3 border-b border-slate-200 pb-3">
-                  <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                    <MessageCircle className="size-4 text-slate-500" />
-                    最近动态
-                  </p>
-                  <span className="text-[11px] font-medium text-slate-400">Today</span>
-                </div>
-
-                <div className="mt-4 grid gap-2">
-                  {(recentActivity.length > 0 ? recentActivity : ["还没有 Agent 动态。"]).map((item) => (
-                    <div className="border-t border-slate-100 py-2 first:border-t-0 first:pt-0" key={item}>
-                      <p className="line-clamp-2 text-sm leading-6 text-slate-600">{item}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </aside>
           </div>
         </section>
       </main>

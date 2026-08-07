@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
 import type { MyAgentInboxItem } from "@repo/contracts"
 import {
+  ArrowUpRight,
   Compass,
+  Inbox as InboxIcon,
+  ListFilter,
+  PanelLeftOpen,
   Plus,
   Star,
   X,
@@ -23,6 +27,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@repo/ui/sheet"
+import { SidebarTrigger } from "@repo/ui/sidebar"
 
 type ChatConversation = MyAgentInboxItem
 
@@ -40,16 +45,32 @@ function getConversationPreview(conversation: ChatConversation) {
 
 function InboxList({ conversations, selectedConversationId, onSelectConversation, onClose, className }: InboxListProps) {
   return (
-    <aside className={cn("flex h-56 min-h-0 w-full shrink-0 flex-col border-b bg-white lg:h-auto lg:w-[19rem] lg:border-r lg:border-b-0", className)}>
-      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4">
-        <div>
-          <p className="text-sm font-semibold text-slate-900">对话</p>
-          <p className="mt-1 text-xs text-slate-400">{conversations.length} 位 Agent 伴侣</p>
+    <aside className={cn("flex h-56 min-h-0 w-full shrink-0 flex-col overflow-hidden border-b border-[#e7e9e8] bg-white lg:h-auto lg:w-[17rem] lg:border-r lg:border-b-0", className)}>
+      <div className="sticky top-0 z-10 flex h-11 shrink-0 items-center justify-between gap-2 border-b border-[#e7e9e8] bg-white px-3">
+        <div className="flex min-w-0 items-center gap-1.5">
+          <SidebarTrigger
+            aria-label="收缩或展开区域 1 导航"
+            className="size-7 shrink-0 rounded-lg text-[#687572] hover:bg-[#f0f2f1] hover:text-[#27353a]"
+            title="收缩或展开导航"
+          />
+          <button
+            aria-label="筛选对话（即将推出）"
+            className="flex size-7 shrink-0 cursor-not-allowed items-center justify-center rounded-lg text-[#9aa29f]"
+            disabled
+            title="筛选功能即将推出"
+            type="button"
+          >
+            <ListFilter className="size-3.5" />
+          </button>
+          <p className="truncate text-[13px] font-semibold text-[#17232b]">
+            你的对话
+            <span className="ml-1.5 text-[11px] font-normal text-[#9a8d7e]">{conversations.length} 位 Agent</span>
+          </p>
         </div>
         {onClose ? (
           <button
             aria-label="关闭对话列表"
-            className="flex size-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100"
+            className="flex size-7 items-center justify-center rounded-full text-[#7d8583] transition-colors hover:bg-[#f0f1f0] hover:text-[#27353a]"
             onClick={onClose}
             title="关闭"
             type="button"
@@ -58,9 +79,19 @@ function InboxList({ conversations, selectedConversationId, onSelectConversation
           </button>
         ) : null}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="divide-y divide-slate-100">
-          {conversations.map((conversation) => {
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div>
+          {conversations.length === 0 ? (
+            <div className="flex min-h-60 items-center justify-center px-6 text-center">
+              <div>
+                <span className="mx-auto flex size-11 items-center justify-center rounded-full bg-[#f1f3f2] text-[#7b8783]">
+                  <InboxIcon className="size-5" />
+                </span>
+                <p className="mt-4 text-sm font-medium text-[#4b5b58]">还没有对话</p>
+                <p className="mt-1 text-xs leading-5 text-[#9aa29f]">创建一位 Agent 伴侣，开始第一段对话。</p>
+              </div>
+            </div>
+          ) : conversations.map((conversation) => {
             const selected = conversation.id === selectedConversationId
 
             return (
@@ -68,31 +99,31 @@ function InboxList({ conversations, selectedConversationId, onSelectConversation
                 aria-current={selected ? "page" : undefined}
                 key={conversation.id}
                 className={cn(
-                  "group relative flex w-full gap-3 px-4 py-3.5 text-left transition-colors",
-                  "focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-slate-400",
-                  selected ? "bg-slate-50" : "bg-white hover:bg-slate-50",
+                  "group relative flex w-full gap-2.5 rounded-none px-3 py-3 text-left transition-[background-color,opacity] duration-200 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-[linear-gradient(90deg,transparent_0%,#d6e1db_22%,#d6e1db_78%,transparent_100%)] before:opacity-0 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[linear-gradient(90deg,transparent_0%,#d6e1db_22%,#d6e1db_78%,transparent_100%)] after:opacity-0",
+                  "focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#9b7851]",
+                  selected
+                    ? "bg-[#f1f5f2] before:opacity-100 after:opacity-100"
+                    : "hover:bg-[#f7f9f7] hover:before:opacity-100 hover:after:opacity-100",
                 )}
                 onClick={() => onSelectConversation(conversation.id)}
                 type="button"
               >
-                {selected ? <span className="absolute inset-y-0 left-0 w-0.5 bg-slate-950" /> : null}
                 <span className="relative shrink-0">
                   <AgentAvatar
-                    className={cn("size-9 rounded-md text-xs", selected ? "bg-slate-950 text-white" : "bg-slate-100 text-slate-700")}
-                    fallbackClassName={selected ? "bg-slate-950 text-white" : "bg-slate-100 text-slate-700"}
+                    className={cn("size-9 rounded-md text-xs", selected ? "bg-[#27353a] text-[#f9f5ed]" : "border-[#e0e4e2] bg-[#f1f3f2] text-[#53665f]")}
+                    fallbackClassName={selected ? "bg-[#27353a] text-[#f9f5ed]" : "bg-[#f1f3f2] text-[#53665f]"}
                     imageKey={conversation.imageKey}
                     name={conversation.name}
                   />
-                  {conversation.unread ? <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full border border-white bg-slate-950" /> : null}
+                  {conversation.unread ? <span className="absolute -right-0.5 -top-0.5 size-2 rounded-full border-2 border-white bg-[#a37b4f]" /> : null}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex min-w-0 items-center gap-2">
-                    <span className="truncate text-sm font-medium text-slate-800">{conversation.name}</span>
-                    {conversation.pinned ? <Star className="size-3 shrink-0 fill-slate-500 text-slate-500" /> : null}
-                    <span className="ml-auto shrink-0 text-[11px] text-slate-400">{conversation.lastActive}</span>
+                    <span className="truncate text-[13px] font-semibold text-[#27353a]">{conversation.name}</span>
+                    {conversation.pinned ? <Star className="size-3 shrink-0 fill-[#a37b4f] text-[#a37b4f]" /> : null}
+                    <span className="ml-auto shrink-0 text-[11px] text-[#9a8d7e]">{conversation.lastActive}</span>
                   </span>
-                  <span className="mt-1 block truncate text-xs text-slate-500">{conversation.headline}</span>
-                  <span className="mt-1 block truncate text-xs leading-5 text-slate-400">{getConversationPreview(conversation)}</span>
+                  <span className="mt-1 block truncate text-[11px] leading-5 text-[#929b98]">{getConversationPreview(conversation)}</span>
                 </span>
               </button>
             )
@@ -103,23 +134,42 @@ function InboxList({ conversations, selectedConversationId, onSelectConversation
   )
 }
 
-function EmptyChatPanel() {
+function EmptyChatPanel({ onOpenConversationList }: { onOpenConversationList?: () => void }) {
   const router = useRouter()
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col bg-slate-50/70">
-      <div className="flex flex-1 items-center justify-center px-5 py-8">
-        <div className="w-full max-w-md border border-slate-200 bg-white px-6 py-7 text-center">
-          <Compass className="mx-auto size-8 text-slate-300" />
-          <h2 className="mt-4 text-lg font-semibold text-slate-950">创建一个 Agent 开始聊天</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-500">创建完成后，新的对话会出现在左侧列表中。</p>
-          <div className="mt-5 flex flex-wrap justify-center gap-2">
-            <Button className="rounded-md" onClick={() => router.push("/create-agent-companion")} type="button">
-              <Plus className="size-4" />
-              创建 Agent 伴侣
-            </Button>
-            <Button className="rounded-md" onClick={() => router.push("/discover")} type="button" variant="outline">浏览角色</Button>
-          </div>
+    <section className="flex min-h-0 flex-1 items-center justify-center bg-white px-6 py-10 sm:px-10">
+      <div className="w-full max-w-md text-center">
+        {onOpenConversationList ? (
+          <button
+            aria-label="打开聊天列表"
+            className="mb-8 inline-flex size-9 items-center justify-center rounded-full border border-[#e0e4e2] text-[#687572] transition-colors hover:bg-[#f1f3f2] lg:hidden"
+            onClick={onOpenConversationList}
+            title="打开聊天列表"
+            type="button"
+          >
+            <PanelLeftOpen className="size-4" />
+          </button>
+        ) : null}
+        <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-[#27353a] text-[#d7bb89] shadow-[0_12px_30px_rgba(39,53,58,0.14)]">
+          <Compass className="size-6" />
+        </span>
+        <p className="mt-7 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#a37b4f]">电子伴侣</p>
+        <h1 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-[#27353a] sm:text-3xl">选择一位 Agent 开始聊天</h1>
+        <p className="mx-auto mt-3 max-w-sm text-sm leading-6 text-[#89928f]">从左侧选择一位 Agent 伴侣，或者创建一个属于你的新角色。</p>
+        <div className="mt-7 flex flex-wrap justify-center gap-2.5">
+          <Button
+            className="h-10 rounded-full bg-[#27353a] px-4 text-sm text-white hover:bg-[#33474b]"
+            onClick={() => router.push("/create-agent-companion")}
+            type="button"
+          >
+            <Plus className="size-4" />
+            创建 Agent 伴侣
+            <ArrowUpRight className="size-4" />
+          </Button>
+          <Button className="h-10 rounded-full border-[#dfe4e1] px-4 text-sm text-[#53615e] hover:bg-[#f1f3f2]" onClick={() => router.push("/discover")} type="button" variant="outline">
+            浏览角色
+          </Button>
         </div>
       </div>
     </section>
@@ -128,11 +178,13 @@ function EmptyChatPanel() {
 
 function ChatPageState({ title, description }: { title: string; description: string }) {
   return (
-    <section className="flex min-h-0 flex-1 items-center justify-center bg-slate-50/70 px-5 py-8">
-      <div className="w-full max-w-sm border border-slate-200 bg-white px-6 py-7 text-center">
-        <Compass className="mx-auto size-8 text-slate-300" />
-        <h2 className="mt-4 text-lg font-semibold text-slate-950">{title}</h2>
-        <p className="mt-2 text-sm leading-6 text-slate-500">{description}</p>
+    <section className="flex min-h-0 flex-1 items-center justify-center bg-white px-5 py-8">
+      <div className="w-full max-w-sm rounded-2xl border border-[#e3dbd0] bg-[#fbfaf7] px-7 py-8 text-center shadow-[0_18px_45px_rgba(51,43,34,0.06)]">
+        <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-[#27353a] text-[#d7bb89]">
+          <Compass className="size-5" />
+        </span>
+        <h2 className="mt-5 text-lg font-semibold text-[#27353a]">{title}</h2>
+        <p className="mt-2 text-sm leading-6 text-[#857c70]">{description}</p>
       </div>
     </section>
   )
@@ -148,8 +200,6 @@ export default function Page() {
   const conversations = agentInboxQuery.data?.items ?? []
   const selectedConversation =
     conversations.find((conversation) => conversation.id === selectedConversationId) ?? conversations[0] ?? null
-  const hasAgent = conversations.length > 0
-
   useEffect(() => {
     if (conversations.length === 0) {
       if (selectedConversationId !== null) {
@@ -165,14 +215,12 @@ export default function Page() {
   }, [conversations, selectedConversationId])
 
   return (
-    <DashboardShell title="聊天">
-      <div className="flex h-[calc(100vh-4rem)] min-h-0 flex-col overflow-hidden bg-slate-50/70 lg:flex-row">
+    <DashboardShell hideHeader title="聊天">
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white lg:flex-row">
         {agentInboxQuery.isLoading ? (
           <ChatPageState title="正在加载对话" description="请稍候，正在读取你的 Agent 会话。" />
         ) : agentInboxQuery.isError ? (
           <ChatPageState title="对话列表加载失败" description="请检查网络或 API 服务后重试。" />
-        ) : !hasAgent ? (
-          <EmptyChatPanel />
         ) : (
           <>
             <div className="hidden min-h-0 lg:flex">
@@ -206,14 +254,16 @@ export default function Page() {
               </SheetContent>
             </Sheet>
             {selectedConversation ? (
-          <InboxChat
-            conversation={selectedConversation}
-            onOpenConversationList={() => setIsMobileInboxOpen(true)}
-            onConversationUpdated={() => {
-              void agentInboxQuery.refetch()
-            }}
-          />
-            ) : <EmptyChatPanel />}
+              <InboxChat
+                conversation={selectedConversation}
+                onOpenConversationList={() => setIsMobileInboxOpen(true)}
+                onConversationUpdated={() => {
+                  void agentInboxQuery.refetch()
+                }}
+              />
+            ) : (
+              <EmptyChatPanel onOpenConversationList={() => setIsMobileInboxOpen(true)} />
+            )}
           </>
         )}
       </div>

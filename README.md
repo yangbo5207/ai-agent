@@ -1,3 +1,7 @@
+# 付费小册
+
+本实战项目是付费小册[AI Agent 企业级实战](https://aicompanion.usehook.cn/) 中一点一点实现的详细案例，要深入学习的朋友可以购买学习，目前小册已经更新 234 章，讲得很详细，欢迎大家了解
+
 # AI Agent
 
 这是一个基于 pnpm workspace + Turborepo 的 monorepo，包含：

@@ -226,7 +226,7 @@ function createGeneratedImageFile(item: ImageGenerationHistoryItem) {
 function ConfigField({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="grid gap-1.5">
-      <span className="text-xs font-medium text-slate-500">{label}</span>
+      <span className="text-[11px] font-medium text-[#687572]">{label}</span>
       {children}
     </label>
   )
@@ -528,85 +528,81 @@ export default function ImageGenerationPage() {
   }
 
   return (
-    <DashboardShell title="图片生成">
-      <main className="min-h-[calc(100vh-4rem)] bg-slate-50/70">
-        <section className="border-b border-slate-200 bg-white">
-          <div className="mx-auto flex max-w-[90rem] flex-col gap-5 px-5 py-6 lg:px-8 lg:py-7 xl:flex-row xl:items-end xl:justify-between">
-            <div>
-              <p className="text-xs font-medium text-slate-400">IMAGE STUDIO</p>
-              <h1 className="mt-2 text-2xl font-semibold text-slate-950">图片生成</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-                使用当前连接生成图片，在主画布查看结果，并将图片历史保存在当前浏览器。
-              </p>
-            </div>
-            <div className="grid grid-cols-3 border-t border-slate-200 pt-4 xl:border-t-0 xl:pt-0">
-              {[
-                { label: "连接", value: config.enabled ? "已启用" : "已停用", icon: CheckCircle2 },
-                { label: "模型", value: config.model || "未配置", icon: RadioTower },
-                { label: "输出", value: `${config.size} · ${config.outputFormat}`, icon: ImageIcon },
-              ].map((item, index) => {
-                const Icon = item.icon
+    <DashboardShell
+      headerRight={
+        <div className="flex max-w-full flex-wrap items-center gap-2">
+          {[
+            { label: "连接", value: config.enabled ? "已启用" : "已停用", icon: CheckCircle2 },
+            { label: "模型", value: config.model || "未配置", icon: RadioTower },
+            { label: "输出", value: `${config.size} · ${config.outputFormat}`, icon: ImageIcon },
+          ].map((item) => {
+            const Icon = item.icon
 
-                return (
-                  <div className={index === 0 ? "pr-4" : "border-l border-slate-200 px-4 last:pr-0"} key={item.label}>
-                    <Icon className="size-4 text-slate-400" />
-                    <p className="mt-2 text-[11px] font-medium text-slate-400">{item.label}</p>
-                    <p className="mt-1 max-w-28 truncate text-sm font-medium text-slate-700">{item.value}</p>
+            return (
+              <span
+                className="inline-flex h-7 items-center gap-1.5 rounded-full border border-[#d9dfdc] bg-[#fbfaf7] px-2.5 text-[10px] font-medium text-[#53615e]"
+                key={item.label}
+              >
+                <Icon className="size-3 text-[#a37b4f]" />
+                <span className="text-[#9a8d7e]">{item.label}</span>
+                <span className="max-w-28 truncate font-semibold text-[#27353a]">{item.value}</span>
+              </span>
+            )
+          })}
+        </div>
+      }
+      title="图片生成"
+    >
+      <main className="flex h-full min-h-0 flex-col overflow-hidden bg-white">
+        <div className="flex h-full min-h-0 flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <section className="mx-auto grid min-h-0 flex-1 max-w-[90rem] gap-5 overflow-y-auto rounded-xl border border-[#dfe3e1] bg-white px-4 py-5 sm:px-5 sm:py-5 lg:px-6 xl:grid-cols-[18rem_minmax(0,1fr)] xl:items-start">
+            <aside className="xl:sticky xl:top-4 xl:self-start">
+              <form
+                className="overflow-hidden rounded-lg border border-[#dfe3e1] bg-[#fffefa]"
+                onSubmit={(event) => {
+                  event.preventDefault()
+                  handleSaveConfig()
+                }}
+              >
+                <div className="flex min-h-14 items-center justify-between gap-3 border-b border-[#e3e6e4] bg-[#fbfaf7] px-3.5 py-3">
+                  <div>
+                    <p className="flex items-center gap-2 text-[13px] font-semibold text-[#27353a]">
+                      <KeyRound className="size-3.5 text-[#a37b4f]" />
+                      连接与参数
+                    </p>
+                    <p className="mt-0.5 text-[10px] leading-5 text-[#929b98]">当前浏览器的生图配置</p>
                   </div>
-                )
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section className="mx-auto grid max-w-[90rem] gap-8 px-5 py-8 lg:px-8 xl:grid-cols-[19rem_minmax(0,1fr)] xl:items-start">
-          <aside className="xl:sticky xl:top-20">
-            <form
-              className="border border-slate-200 bg-white"
-              onSubmit={(event) => {
-                event.preventDefault()
-                handleSaveConfig()
-              }}
-            >
-              <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-4 py-4">
-                <div>
-                  <p className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                    <KeyRound className="size-4 text-slate-400" />
-                    连接与参数
-                  </p>
-                  <p className="mt-1 text-xs leading-5 text-slate-400">当前浏览器的生图配置</p>
-                </div>
-                <button
-                  aria-label="启用图片生成连接"
-                  aria-pressed={config.enabled}
-                  className={config.enabled ? "h-6 w-10 rounded-full bg-slate-950 p-0.5" : "h-6 w-10 rounded-full bg-slate-200 p-0.5"}
-                  onClick={() => {
-                    setConfig((current) => ({ ...current, enabled: !current.enabled }))
-                    setNotice("")
-                  }}
-                  type="button"
-                >
-                  <span className={config.enabled ? "ml-auto block size-5 rounded-full bg-white" : "block size-5 rounded-full bg-white"} />
-                </button>
-              </div>
-
-              <div className="grid gap-4 px-4 py-5">
-                <ConfigField label="服务名称">
-                  <input
-                    className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-300 focus:border-slate-500"
-                    onChange={(event) => {
-                      const providerName = event.currentTarget.value
-                      setConfig((current) => ({ ...current, providerName }))
+                  <button
+                    aria-label="启用图片生成连接"
+                    aria-pressed={config.enabled}
+                    className={config.enabled ? "h-6 w-10 rounded-full bg-[#27353a] p-0.5" : "h-6 w-10 rounded-full bg-[#dfe3e1] p-0.5"}
+                    onClick={() => {
+                      setConfig((current) => ({ ...current, enabled: !current.enabled }))
                       setNotice("")
                     }}
-                    placeholder="例如：我的生图服务"
-                    value={config.providerName}
-                  />
-                </ConfigField>
+                    type="button"
+                  >
+                    <span className={config.enabled ? "ml-auto block size-5 rounded-full bg-white" : "block size-5 rounded-full bg-white"} />
+                  </button>
+                </div>
+
+                <div className="grid gap-3.5 px-3.5 py-4">
+                  <ConfigField label="服务名称">
+                    <input
+                      className="h-8 rounded-md border border-[#d9dfdc] bg-[#fffefa] px-2.5 text-[11px] text-[#53615e] outline-none transition-colors placeholder:text-[#b0b8b4] focus:border-[#9baba4] focus:ring-2 focus:ring-[#dce5e0]"
+                      onChange={(event) => {
+                        const providerName = event.currentTarget.value
+                        setConfig((current) => ({ ...current, providerName }))
+                        setNotice("")
+                      }}
+                      placeholder="例如：我的生图服务"
+                      value={config.providerName}
+                    />
+                  </ConfigField>
 
                 <ConfigField label="Base URL">
                   <input
-                    className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-300 focus:border-slate-500"
+                    className="h-8 rounded-md border border-[#d9dfdc] bg-[#fffefa] px-2.5 text-[11px] text-[#53615e] outline-none transition-colors placeholder:text-[#b0b8b4] focus:border-[#9baba4] focus:ring-2 focus:ring-[#dce5e0]"
                     onChange={(event) => {
                       const baseURL = event.currentTarget.value
                       setConfig((current) => ({ ...current, baseURL }))
@@ -618,11 +614,11 @@ export default function ImageGenerationPage() {
                 </ConfigField>
 
                 <div className="grid gap-2">
-                  <span className="text-xs font-medium text-slate-500">请求协议</span>
-                  <div className="grid grid-cols-2 overflow-hidden rounded-md border border-slate-200">
+                  <span className="text-[11px] font-medium text-[#687572]">请求协议</span>
+                  <div className="grid grid-cols-2 overflow-hidden rounded-md border border-[#d9dfdc]">
                     <button
                       aria-pressed={config.providerApi === "responses"}
-                      className={config.providerApi === "responses" ? "h-9 bg-slate-950 px-3 text-xs font-medium text-white" : "h-9 border-r border-slate-200 bg-white px-3 text-xs font-medium text-slate-500 hover:bg-slate-50"}
+                      className={config.providerApi === "responses" ? "h-8 bg-[#27353a] px-3 text-[11px] font-medium text-white" : "h-8 border-r border-[#d9dfdc] bg-[#fffefa] px-3 text-[11px] font-medium text-[#687572] hover:bg-[#f1f3f1]"}
                       disabled={usesDirectImageApi}
                       onClick={() => {
                         setConfig((current) => ({ ...current, providerApi: "responses" }))
@@ -634,7 +630,7 @@ export default function ImageGenerationPage() {
                     </button>
                     <button
                       aria-pressed={config.providerApi === "images_generations"}
-                      className={config.providerApi === "images_generations" ? "h-9 bg-slate-950 px-3 text-xs font-medium text-white" : "h-9 bg-white px-3 text-xs font-medium text-slate-500 hover:bg-slate-50"}
+                      className={config.providerApi === "images_generations" ? "h-8 bg-[#27353a] px-3 text-[11px] font-medium text-white" : "h-8 bg-[#fffefa] px-3 text-[11px] font-medium text-[#687572] hover:bg-[#f1f3f1]"}
                       onClick={() => {
                         setConfig((current) => ({ ...current, providerApi: "images_generations" }))
                         setNotice("")
@@ -648,7 +644,7 @@ export default function ImageGenerationPage() {
 
                 <ConfigField label="模型">
                   <input
-                    className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-300 focus:border-slate-500"
+                    className="h-8 rounded-md border border-[#d9dfdc] bg-[#fffefa] px-2.5 text-[11px] text-[#53615e] outline-none transition-colors placeholder:text-[#b0b8b4] focus:border-[#9baba4] focus:ring-2 focus:ring-[#dce5e0]"
                     onChange={(event) => {
                       const model = event.currentTarget.value
                       setConfig((current) => ({
@@ -671,7 +667,7 @@ export default function ImageGenerationPage() {
 
                 <ConfigField label="API Key">
                   <input
-                    className="h-9 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-800 outline-none transition-colors placeholder:text-slate-300 focus:border-slate-500"
+                    className="h-8 rounded-md border border-[#d9dfdc] bg-[#fffefa] px-2.5 text-[11px] text-[#53615e] outline-none transition-colors placeholder:text-[#b0b8b4] focus:border-[#9baba4] focus:ring-2 focus:ring-[#dce5e0]"
                     onChange={(event) => {
                       const apiKey = event.currentTarget.value
                       setConfig((current) => ({ ...current, apiKey }))
@@ -683,8 +679,8 @@ export default function ImageGenerationPage() {
                   />
                 </ConfigField>
 
-                <div className="border-t border-slate-100 pt-4">
-                  <p className="text-xs font-medium text-slate-400">生成参数</p>
+                <div className="border-t border-[#edf0ee] pt-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#a37b4f]">生成参数</p>
                   <div className="mt-3 grid grid-cols-2 gap-3">
                     <ConfigField label="尺寸">
                       <Select
@@ -694,10 +690,10 @@ export default function ImageGenerationPage() {
                         }}
                         value={config.size}
                       >
-                        <SelectTrigger className="h-9 w-full rounded-md border-slate-200 bg-white text-slate-800">
+                        <SelectTrigger className="h-8 w-full rounded-md border-[#d9dfdc] bg-[#fffefa] text-[11px] text-[#53615e] shadow-none focus:ring-[#dce5e0]">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-lg border-[#d9dfdc] bg-[#fffefa] shadow-[0_12px_30px_rgba(39,53,58,0.10)]">
                           {imageSizes.map((size) => <SelectItem key={size} value={size}>{size}</SelectItem>)}
                         </SelectContent>
                       </Select>
@@ -714,10 +710,10 @@ export default function ImageGenerationPage() {
                         }}
                         value={config.quality}
                       >
-                        <SelectTrigger className="h-9 w-full rounded-md border-slate-200 bg-white text-slate-800">
+                        <SelectTrigger className="h-8 w-full rounded-md border-[#d9dfdc] bg-[#fffefa] text-[11px] text-[#53615e] shadow-none focus:ring-[#dce5e0]">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-lg border-[#d9dfdc] bg-[#fffefa] shadow-[0_12px_30px_rgba(39,53,58,0.10)]">
                           {imageQualities.map((quality) => (
                             <SelectItem key={quality.value} value={quality.value}>{quality.label}</SelectItem>
                           ))}
@@ -737,10 +733,10 @@ export default function ImageGenerationPage() {
                         }}
                         value={config.reasoningEffort}
                       >
-                        <SelectTrigger className="h-9 w-full rounded-md border-slate-200 bg-white text-slate-800">
+                        <SelectTrigger className="h-8 w-full rounded-md border-[#d9dfdc] bg-[#fffefa] text-[11px] text-[#53615e] shadow-none focus:ring-[#dce5e0]">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-lg border-[#d9dfdc] bg-[#fffefa] shadow-[0_12px_30px_rgba(39,53,58,0.10)]">
                           {reasoningEfforts.map((effort) => (
                             <SelectItem key={effort.value} value={effort.value}>{effort.label}</SelectItem>
                           ))}
@@ -756,10 +752,10 @@ export default function ImageGenerationPage() {
                         }}
                         value={config.background}
                       >
-                        <SelectTrigger className="h-9 w-full rounded-md border-slate-200 bg-white text-slate-800">
+                        <SelectTrigger className="h-8 w-full rounded-md border-[#d9dfdc] bg-[#fffefa] text-[11px] text-[#53615e] shadow-none focus:ring-[#dce5e0]">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-lg border-[#d9dfdc] bg-[#fffefa] shadow-[0_12px_30px_rgba(39,53,58,0.10)]">
                           {imageBackgrounds
                             .filter((background) => !usesFixedJpegOutput || background !== "transparent")
                             .map((background) => <SelectItem key={background} value={background}>{background}</SelectItem>)}
@@ -776,10 +772,10 @@ export default function ImageGenerationPage() {
                         }}
                         value={usesFixedJpegOutput ? "jpeg" : config.outputFormat}
                       >
-                        <SelectTrigger className="h-9 w-full rounded-md border-slate-200 bg-white text-slate-800">
+                        <SelectTrigger className="h-8 w-full rounded-md border-[#d9dfdc] bg-[#fffefa] text-[11px] text-[#53615e] shadow-none focus:ring-[#dce5e0]">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-lg border-[#d9dfdc] bg-[#fffefa] shadow-[0_12px_30px_rgba(39,53,58,0.10)]">
                           {imageOutputFormats.map((format) => <SelectItem key={format} value={format}>{format}</SelectItem>)}
                         </SelectContent>
                       </Select>
@@ -787,15 +783,15 @@ export default function ImageGenerationPage() {
                   </div>
                 </div>
 
-                {notice ? <p className="border border-slate-200 bg-slate-50 px-3 py-2 text-xs leading-5 text-slate-600">{notice}</p> : null}
+                {notice ? <p className="rounded-md border border-[#d9dfdc] bg-[#f1f5f2] px-3 py-2 text-[11px] leading-5 text-[#53615e]">{notice}</p> : null}
 
-                <div className="grid grid-cols-2 gap-2 border-t border-slate-100 pt-4">
-                  <button className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-slate-950 px-3 text-sm font-medium text-white hover:bg-slate-800" type="submit">
+                <div className="grid grid-cols-2 gap-2 border-t border-[#e8ece9] pt-4">
+                  <button className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md bg-[#27353a] px-3 text-[11px] font-semibold text-white hover:bg-[#35484c]" type="submit">
                     <CheckCircle2 className="size-4" />
                     保存
                   </button>
                   <button
-                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-slate-200 px-3 text-sm font-medium text-slate-600 hover:bg-slate-50"
+                    className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-[#d9dfdc] px-3 text-[11px] font-semibold text-[#687572] hover:bg-[#f1f3f1]"
                     onClick={handleResetConfig}
                     type="button"
                   >
@@ -804,212 +800,212 @@ export default function ImageGenerationPage() {
                   </button>
                 </div>
 
-                <p className="flex gap-2 border-t border-slate-100 pt-4 text-xs leading-5 text-slate-400">
-                  <ShieldCheck className="mt-0.5 size-3.5 shrink-0" />
-                  配置保存在当前浏览器。生成时，所填 API Key 会随本次请求发送至 API 代理进行转发，不写入用户资料或 D1。
-                </p>
-              </div>
-            </form>
-          </aside>
-
-          <div className="min-w-0 space-y-8">
-            <section className="overflow-hidden border border-slate-200 bg-white">
-              <div className="flex flex-col items-start justify-between gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:px-6">
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">创作画布</p>
-                  <p className="mt-1 text-xs text-slate-400">生成结果或从本地历史选择的图片会显示在这里。</p>
+                  <p className="flex gap-2 border-t border-[#e8ece9] pt-4 text-[10px] leading-5 text-[#929b98]">
+                    <ShieldCheck className="mt-0.5 size-3.5 shrink-0" />
+                    配置保存在当前浏览器。生成时，所填 API Key 会随本次请求发送至 API 代理进行转发，不写入用户资料或 D1。
+                  </p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                  {isGenerating ? (
-                    <div className="flex h-8 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 text-xs font-medium text-slate-600">
-                      <span className="size-1.5 rounded-full bg-slate-400 motion-safe:animate-pulse" />
-                      <span>生成中</span>
-                      <time className="min-w-10 tabular-nums text-slate-900">
-                        {formatGenerationDuration(generationElapsedMs)}
-                      </time>
-                    </div>
-                  ) : null}
-                  {latestImageMessage?.uploadedKey ? (
-                    <span className="inline-flex h-8 items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-3 text-xs font-medium text-emerald-700">
-                      <CheckCircle2 className="size-3.5" />
-                      已上传
-                    </span>
-                  ) : latestImageMessage ? (
-                    <button
-                      aria-label="上传最新图片"
-                      className="flex size-8 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-                      disabled={uploadingHistoryIds.has(latestImageMessage.id)}
-                      onClick={() => void handleUploadHistoryItem(latestImageMessage)}
-                      title="上传最新图片"
-                      type="button"
-                    >
-                      {uploadingHistoryIds.has(latestImageMessage.id)
-                        ? <Loader2 className="size-4 animate-spin" />
-                        : <Upload className="size-4" />}
-                    </button>
-                  ) : null}
-                  {latestImageMessage?.imageUrl ? (
-                    <a
-                      aria-label="下载最新图片"
-                      className="flex size-8 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50"
-                      download={`generated-image-${latestImageMessage.id}.${getImageFileExtension(latestImageMessage.mimeType)}`}
-                      href={latestImageMessage.imageUrl}
-                      title="下载最新图片"
-                    >
-                      <Download className="size-4" />
-                    </a>
-                  ) : null}
-                </div>
-              </div>
+              </form>
+            </aside>
 
-              <div className="flex min-h-[32rem] items-center justify-center bg-slate-50/70 p-5 sm:p-8">
-                {latestImageMessage?.imageUrl && !isGenerating ? (
-                  <div className="flex max-h-[38rem] w-full flex-col items-center">
-                    <img alt="最新生成图片" className="max-h-[34rem] w-full object-contain" src={latestImageMessage.imageUrl} />
-                    <p className="mt-4 self-start text-xs leading-5 text-slate-500">
-                      {formatDateTime(latestImageMessage.createdAtMs)} · {latestImageMessage.model}
-                      {latestImageMessage.styleLabel ? ` · ${latestImageMessage.styleLabel}` : ""}
-                      {` · 耗时 ${formatGenerationDuration(latestImageMessage.durationMs)}`}
-                    </p>
+            <div className="min-w-0 space-y-5">
+              <section className="overflow-hidden rounded-lg border border-[#dfe3e1] bg-[#fffefa]">
+                <div className="flex flex-col items-start justify-between gap-3 border-b border-[#e3e6e4] bg-[#fbfaf7] px-4 py-3 sm:flex-row sm:items-center sm:px-5">
+                  <div>
+                    <p className="flex items-center gap-2 text-[13px] font-semibold text-[#27353a]"><Brush className="size-3.5 text-[#a37b4f]" /> 创作画布</p>
+                    <p className="mt-0.5 text-[10px] text-[#929b98]">生成结果或从本地历史选择的图片会显示在这里。</p>
                   </div>
-                ) : isGenerating ? (
-                  <Skeleton
-                    aria-live="polite"
-                    className="mx-auto flex w-full items-center justify-center border border-slate-200 bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200"
-                    role="status"
-                    style={{
-                      aspectRatio: getImageAspectRatio(config.size),
-                      maxWidth: getImageSkeletonMaxWidth(config.size),
-                    }}
-                  >
-                    <div className="relative z-10 text-center text-slate-500">
-                      <ImageIcon className="mx-auto size-8 text-slate-300" />
-                      <p className="mt-4 text-sm font-medium text-slate-700">正在生成图片</p>
-                      <p className="mt-2 flex items-center justify-center gap-1.5 text-sm font-medium tabular-nums text-slate-600">
-                        <Clock3 className="size-4 text-slate-400" />
-                        {formatGenerationDuration(generationElapsedMs)}
-                      </p>
-                      <p className="mt-2 text-xs text-slate-400">画布会在完成后自动更新。</p>
-                    </div>
-                  </Skeleton>
-                ) : isHistoryLoading ? (
-                  <Skeleton className="aspect-square w-full max-w-2xl border border-slate-200 bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200" />
-                ) : (
-                  <div className="max-w-sm text-center">
-                    <Brush className="mx-auto size-9 text-slate-300" />
-                    <p className="mt-4 text-sm font-medium text-slate-700">开始一次新的创作</p>
-                    <p className="mt-2 text-sm leading-6 text-slate-400">描述画面主体、风格、构图和光线，生成结果将在这里呈现。</p>
-                  </div>
-                )}
-              </div>
-
-              <form
-                className="border-t border-slate-200 px-5 py-5 sm:px-6"
-                onSubmit={(event) => {
-                  event.preventDefault()
-                  void handleGenerate()
-                }}
-              >
-                <div className="mb-4">
-                  <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
-                    <Palette className="size-4 text-slate-400" />
-                    图片风格
-                  </div>
-                  <div aria-label="图片风格" className="flex min-w-0 gap-2 overflow-x-auto pb-1" role="group">
-                    {imageStyles.map((style) => (
+                  <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                    {isGenerating ? (
+                      <div className="flex h-7 items-center gap-2 rounded-md bg-[#f1f3f1] px-2.5 text-[10px] font-medium text-[#687572]">
+                        <span className="size-1.5 rounded-full bg-[#a37b4f] motion-safe:animate-pulse" />
+                        <span>生成中</span>
+                        <time className="min-w-10 tabular-nums text-[#27353a]">
+                          {formatGenerationDuration(generationElapsedMs)}
+                        </time>
+                      </div>
+                    ) : null}
+                    {latestImageMessage?.uploadedKey ? (
+                      <span className="inline-flex h-7 items-center gap-1.5 rounded-md bg-[#e5eee8] px-2.5 text-[10px] font-medium text-[#426453]">
+                        <CheckCircle2 className="size-3.5" />
+                        已上传
+                      </span>
+                    ) : latestImageMessage ? (
                       <button
-                        aria-pressed={selectedImageStyleId === style.id}
-                        className={selectedImageStyleId === style.id
-                          ? "h-9 shrink-0 rounded-md border border-slate-950 bg-slate-950 px-3 text-xs font-medium text-white"
-                          : "h-9 shrink-0 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50"}
+                        aria-label="上传最新图片"
+                        className="flex size-7 items-center justify-center rounded-md border border-[#d9dfdc] text-[#687572] hover:bg-[#f1f3f1] disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={uploadingHistoryIds.has(latestImageMessage.id)}
+                        onClick={() => void handleUploadHistoryItem(latestImageMessage)}
+                        title="上传最新图片"
+                        type="button"
+                      >
+                        {uploadingHistoryIds.has(latestImageMessage.id)
+                          ? <Loader2 className="size-4 animate-spin" />
+                          : <Upload className="size-4" />}
+                      </button>
+                    ) : null}
+                    {latestImageMessage?.imageUrl ? (
+                      <a
+                        aria-label="下载最新图片"
+                        className="flex size-7 items-center justify-center rounded-md border border-[#d9dfdc] text-[#687572] hover:bg-[#f1f3f1]"
+                        download={`generated-image-${latestImageMessage.id}.${getImageFileExtension(latestImageMessage.mimeType)}`}
+                        href={latestImageMessage.imageUrl}
+                        title="下载最新图片"
+                      >
+                        <Download className="size-4" />
+                      </a>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div className="flex min-h-[30rem] items-center justify-center bg-[#f7f8f6] p-5 sm:p-8">
+                  {latestImageMessage?.imageUrl && !isGenerating ? (
+                    <div className="flex max-h-[38rem] w-full flex-col items-center">
+                      <img alt="最新生成图片" className="max-h-[34rem] w-full object-contain" src={latestImageMessage.imageUrl} />
+                      <p className="mt-4 self-start text-[10px] leading-5 text-[#929b98]">
+                        {formatDateTime(latestImageMessage.createdAtMs)} · {latestImageMessage.model}
+                        {latestImageMessage.styleLabel ? ` · ${latestImageMessage.styleLabel}` : ""}
+                        {` · 耗时 ${formatGenerationDuration(latestImageMessage.durationMs)}`}
+                      </p>
+                    </div>
+                  ) : isGenerating ? (
+                    <Skeleton
+                      aria-live="polite"
+                      className="mx-auto flex w-full items-center justify-center border border-[#dfe3e1] bg-gradient-to-br from-[#eef1ef] via-[#f8faf8] to-[#dfe7e1]"
+                      role="status"
+                      style={{
+                        aspectRatio: getImageAspectRatio(config.size),
+                        maxWidth: getImageSkeletonMaxWidth(config.size),
+                      }}
+                    >
+                      <div className="relative z-10 text-center text-[#687572]">
+                        <ImageIcon className="mx-auto size-8 text-[#a1ada7]" />
+                        <p className="mt-4 text-sm font-semibold text-[#53615e]">正在生成图片</p>
+                        <p className="mt-2 flex items-center justify-center gap-1.5 text-sm font-semibold tabular-nums text-[#687572]">
+                          <Clock3 className="size-4 text-[#a37b4f]" />
+                          {formatGenerationDuration(generationElapsedMs)}
+                        </p>
+                        <p className="mt-2 text-[11px] text-[#929b98]">画布会在完成后自动更新。</p>
+                      </div>
+                    </Skeleton>
+                  ) : isHistoryLoading ? (
+                    <Skeleton className="aspect-square w-full max-w-2xl border border-[#dfe3e1] bg-gradient-to-br from-[#eef1ef] via-[#f8faf8] to-[#dfe7e1]" />
+                  ) : (
+                    <div className="max-w-sm text-center">
+                      <span className="mx-auto flex size-11 items-center justify-center rounded-full bg-[#f1f3f1] text-[#7b8783]"><Brush className="size-5" /></span>
+                      <p className="mt-4 text-sm font-semibold text-[#53615e]">开始一次新的创作</p>
+                      <p className="mt-2 text-sm leading-6 text-[#929b98]">描述画面主体、风格、构图和光线，生成结果将在这里呈现。</p>
+                    </div>
+                  )}
+                </div>
+
+                <form
+                  className="border-t border-[#e3e6e4] bg-[#fffefa] px-4 py-4 sm:px-5"
+                  onSubmit={(event) => {
+                    event.preventDefault()
+                    void handleGenerate()
+                  }}
+                >
+                  <div className="mb-4">
+                    <div className="mb-2 flex items-center gap-2 text-[12px] font-semibold text-[#53615e]">
+                      <Palette className="size-3.5 text-[#a37b4f]" />
+                      图片风格
+                    </div>
+                    <div aria-label="图片风格" className="flex min-w-0 gap-2 overflow-x-auto pb-1" role="group">
+                      {imageStyles.map((style) => (
+                        <button
+                          aria-pressed={selectedImageStyleId === style.id}
+                          className={selectedImageStyleId === style.id
+                            ? "h-8 shrink-0 rounded-md bg-[#27353a] px-2.5 text-[11px] font-semibold text-white"
+                            : "h-8 shrink-0 rounded-md bg-[#f1f3f1] px-2.5 text-[11px] font-medium text-[#687572] hover:bg-[#e7ece9] hover:text-[#27353a]"}
+                          disabled={isGenerating}
+                          key={style.id}
+                          onClick={() => {
+                            setSelectedImageStyleId(style.id)
+                            setErrorMessage("")
+                          }}
+                          type="button"
+                        >
+                          {style.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="mb-3 flex min-w-0 gap-2 overflow-x-auto pb-1">
+                    {quickPrompts.map((prompt) => (
+                      <button
+                        className="shrink-0 rounded-md bg-[#f1f3f1] px-2.5 py-1.5 text-[10px] text-[#687572] transition-colors hover:bg-[#e7ece9] disabled:cursor-not-allowed disabled:opacity-50"
                         disabled={isGenerating}
-                        key={style.id}
+                        key={prompt}
                         onClick={() => {
-                          setSelectedImageStyleId(style.id)
+                          setDraftPrompt(prompt)
                           setErrorMessage("")
                         }}
                         type="button"
                       >
-                        {style.label}
+                        {prompt}
                       </button>
                     ))}
                   </div>
-                </div>
 
-                <div className="mb-3 flex min-w-0 gap-2 overflow-x-auto pb-1">
-                  {quickPrompts.map((prompt) => (
+                  <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+                    <label className="grid gap-2" htmlFor="image-prompt">
+                      <span className="text-[11px] font-semibold text-[#687572]">提示词</span>
+                      <textarea
+                        className="min-h-24 resize-y rounded-md border border-[#d9dfdc] bg-[#fffefa] px-3 py-2.5 text-sm leading-6 text-[#53615e] outline-none transition-colors placeholder:text-[#b0b8b4] focus:border-[#9baba4] focus:ring-2 focus:ring-[#dce5e0] disabled:cursor-not-allowed disabled:bg-[#f1f3f1]"
+                        disabled={isGenerating}
+                        id="image-prompt"
+                        maxLength={maxImageGenerationPromptLength}
+                        onChange={(event) => {
+                          setDraftPrompt(event.currentTarget.value)
+                          setErrorMessage("")
+                        }}
+                        onKeyDown={(event) => {
+                          if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+                            event.preventDefault()
+                            void handleGenerate()
+                          }
+                        }}
+                        placeholder="描述画面主体、风格、构图、光线和用途..."
+                        value={draftPrompt}
+                      />
+                    </label>
                     <button
-                      className="shrink-0 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex h-9 min-w-28 items-center justify-center gap-2 rounded-md bg-[#27353a] px-4 text-sm font-semibold text-white hover:bg-[#35484c] disabled:cursor-not-allowed disabled:opacity-50"
                       disabled={isGenerating}
-                      key={prompt}
-                      onClick={() => {
-                        setDraftPrompt(prompt)
-                        setErrorMessage("")
-                      }}
-                      type="button"
+                      type="submit"
                     >
-                      {prompt}
+                      {isGenerating ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                      {isGenerating ? `生成中 ${formatGenerationDuration(generationElapsedMs)}` : "生成图片"}
                     </button>
-                  ))}
-                </div>
+                  </div>
+                  {errorMessage ? <p className="mt-3 rounded-md border border-[#e8c9c0] bg-[#fff4f1] px-3 py-2 text-sm leading-6 text-[#a14e43]">{errorMessage}</p> : null}
+                </form>
+              </section>
 
-                <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
-                  <label className="grid gap-2" htmlFor="image-prompt">
-                    <span className="text-sm font-medium text-slate-700">提示词</span>
-                    <textarea
-                      className="min-h-28 resize-y rounded-md border border-slate-200 bg-white px-3 py-3 text-sm leading-6 text-slate-800 outline-none transition-colors placeholder:text-slate-300 focus:border-slate-500 disabled:cursor-not-allowed disabled:bg-slate-50"
-                      disabled={isGenerating}
-                      id="image-prompt"
-                      maxLength={maxImageGenerationPromptLength}
-                      onChange={(event) => {
-                        setDraftPrompt(event.currentTarget.value)
-                        setErrorMessage("")
-                      }}
-                      onKeyDown={(event) => {
-                        if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
-                          event.preventDefault()
-                          void handleGenerate()
-                        }
-                      }}
-                      placeholder="描述画面主体、风格、构图、光线和用途..."
-                      value={draftPrompt}
-                    />
-                  </label>
-                  <button
-                    className="inline-flex h-10 min-w-32 items-center justify-center gap-2 rounded-md bg-slate-950 px-5 text-sm font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={isGenerating}
-                    type="submit"
-                  >
-                    {isGenerating ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
-                    {isGenerating ? `生成中 ${formatGenerationDuration(generationElapsedMs)}` : "生成图片"}
-                  </button>
+              <section className="overflow-hidden rounded-lg border border-[#dfe3e1] bg-[#fffefa]" aria-labelledby="generation-history-heading">
+                <div className="flex min-h-14 flex-wrap items-center gap-2 border-b border-[#e3e6e4] bg-[#fbfaf7] px-4 py-3 sm:px-5">
+                  <HardDrive className="size-3.5 text-[#a37b4f]" />
+                  <h2 className="text-sm font-semibold text-[#27353a]" id="generation-history-heading">本地图片历史</h2>
+                  <span className="text-[11px] text-[#929b98]">{historyItems.length} 张</span>
+                  <span className="ml-auto text-[11px] text-[#929b98]">仅保存在当前浏览器</span>
                 </div>
-                {errorMessage ? <p className="mt-3 border border-red-200 bg-red-50 px-3 py-2 text-sm leading-6 text-red-600">{errorMessage}</p> : null}
-              </form>
-            </section>
-
-            <section className="border border-slate-200 bg-white" aria-labelledby="generation-history-heading">
-              <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 px-5 py-4 sm:px-6">
-                <HardDrive className="size-4 text-slate-400" />
-                <h2 className="text-sm font-semibold text-slate-900" id="generation-history-heading">本地图片历史</h2>
-                <span className="text-xs text-slate-400">{historyItems.length} 张</span>
-                <span className="ml-auto text-xs text-slate-400">仅保存在当前浏览器</span>
-              </div>
 
               {historyNotice ? (
                 <p className={historyNotice.type === "success"
-                  ? "border-b border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-700 sm:px-6"
-                  : "border-b border-red-200 bg-red-50 px-5 py-3 text-sm text-red-600 sm:px-6"}
+                  ? "border-b border-[#cfe0d6] bg-[#f0f7f2] px-4 py-2.5 text-xs text-[#426453] sm:px-5"
+                  : "border-b border-[#e8c9c0] bg-[#fff4f1] px-4 py-2.5 text-xs text-[#a14e43] sm:px-5"}
                 >
                   {historyNotice.text}
                 </p>
               ) : null}
 
               {isHistoryLoading ? (
-                <div className="divide-y divide-slate-100" aria-label="正在读取本地历史记录">
+                <div className="divide-y divide-[#edf0ee]" aria-label="正在读取本地历史记录">
                   {Array.from({ length: 3 }, (_, index) => (
-                    <div className="grid gap-4 px-5 py-5 sm:px-6 md:grid-cols-[10rem_minmax(0,1fr)] md:items-stretch" key={index}>
-                      <Skeleton className="h-[7.5rem] w-40 rounded-md" />
+                    <div className="grid gap-4 px-4 py-4 sm:px-5 md:grid-cols-[10rem_minmax(0,1fr)] md:items-stretch" key={index}>
+                      <Skeleton className="h-[7.5rem] w-40 rounded-md border border-[#dfe3e1]" />
                       <div className="flex min-w-0 flex-col py-1 md:h-[7.5rem]">
                         <div className="space-y-3">
                           <Skeleton className="h-4 w-4/5 rounded" />
@@ -1029,19 +1025,21 @@ export default function ImageGenerationPage() {
                   ))}
                 </div>
               ) : historyItems.length === 0 ? (
-                <div className="px-5 py-10 text-center sm:px-6">
-                  <ImageIcon className="mx-auto size-7 text-slate-300" />
-                  <p className="mt-3 text-sm text-slate-500">生成后的图片会缓存在当前浏览器，刷新页面后仍可查看。</p>
+                <div className="px-4 py-12 text-center sm:px-5">
+                  <span className="mx-auto flex size-10 items-center justify-center rounded-full bg-[#27353a] text-[#f7f3ec]">
+                    <ImageIcon className="size-4" />
+                  </span>
+                  <p className="mt-3 text-sm text-[#687572]">生成后的图片会缓存在当前浏览器，刷新页面后仍可查看。</p>
                 </div>
               ) : (
-                <div className="divide-y divide-slate-100">
+                <div className="divide-y divide-[#edf0ee]">
                   {historyItems.map((item) => (
-                    <article className="grid gap-4 px-5 py-5 sm:px-6 md:grid-cols-[10rem_minmax(0,1fr)] md:items-stretch" key={item.id}>
+                    <article className="grid gap-4 px-4 py-4 sm:px-5 md:grid-cols-[10rem_minmax(0,1fr)] md:items-stretch" key={item.id}>
                       <button
                         aria-label="在画布中查看这张图片"
                         className={selectedHistoryId === item.id
-                          ? "h-[7.5rem] w-40 overflow-hidden rounded-md border-2 border-slate-900 bg-slate-50"
-                          : "h-[7.5rem] w-40 overflow-hidden rounded-md border border-slate-200 bg-slate-50 hover:border-slate-400"}
+                          ? "h-[7.5rem] w-40 overflow-hidden rounded-md border-2 border-[#27353a] bg-[#f1f3f1]"
+                          : "h-[7.5rem] w-40 overflow-hidden rounded-md border border-[#d9dfdc] bg-[#f1f3f1] hover:border-[#a9b5b0]"}
                         onClick={() => setSelectedHistoryId(item.id)}
                         type="button"
                       >
@@ -1049,8 +1047,8 @@ export default function ImageGenerationPage() {
                       </button>
 
                       <div className="flex min-w-0 flex-col md:h-[7.5rem]">
-                        <p className="line-clamp-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">{item.prompt}</p>
-                        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
+                        <p className="line-clamp-2 whitespace-pre-wrap break-words text-sm leading-6 text-[#53615e]">{item.prompt}</p>
+                        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[#929b98]">
                           <span>{formatDateTime(item.createdAtMs)}</span>
                           <span>{item.model}</span>
                           {item.styleLabel ? <span>{item.styleLabel}</span> : null}
@@ -1063,8 +1061,8 @@ export default function ImageGenerationPage() {
                         </div>
                         <div className="mt-3 flex flex-wrap items-center justify-between gap-3 md:mt-auto md:pt-3">
                           <p className={item.uploadedKey
-                            ? "flex items-center gap-1.5 text-xs font-medium text-emerald-700"
-                            : "flex items-center gap-1.5 text-xs text-slate-400"}
+                            ? "flex items-center gap-1.5 text-[11px] font-medium text-[#426453]"
+                            : "flex items-center gap-1.5 text-[11px] text-[#929b98]"}
                           >
                             {item.uploadedKey ? <CheckCircle2 className="size-3.5" /> : <HardDrive className="size-3.5" />}
                             {item.uploadedKey ? "已由你手动上传" : "仅本地缓存，尚未上传"}
@@ -1073,7 +1071,7 @@ export default function ImageGenerationPage() {
                           <div className="flex flex-wrap items-center justify-end gap-2 sm:ml-auto">
                             {!item.uploadedKey ? (
                               <button
-                                className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-slate-200 px-3 text-xs font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-[#d9dfdc] bg-[#fffefa] px-3 text-[11px] font-medium text-[#53615e] hover:border-[#a9b5b0] hover:bg-[#f1f3f1] disabled:cursor-not-allowed disabled:opacity-50"
                                 disabled={uploadingHistoryIds.has(item.id)}
                                 onClick={() => void handleUploadHistoryItem(item)}
                                 type="button"
@@ -1085,7 +1083,7 @@ export default function ImageGenerationPage() {
                               </button>
                             ) : null}
                             <button
-                              className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-slate-200 px-3 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                              className="inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-[#d9dfdc] bg-[#fffefa] px-3 text-[11px] font-medium text-[#53615e] hover:border-[#a9b5b0] hover:bg-[#f1f3f1]"
                               onClick={() => setPreviewHistoryId(item.id)}
                               type="button"
                             >
@@ -1094,7 +1092,7 @@ export default function ImageGenerationPage() {
                             </button>
                             <a
                               aria-label="下载图片"
-                              className="flex size-9 items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50"
+                              className="flex size-8 items-center justify-center rounded-md border border-[#d9dfdc] bg-[#fffefa] text-[#687572] hover:border-[#a9b5b0] hover:bg-[#f1f3f1]"
                               download={`generated-image-${item.id}.${getImageFileExtension(item.mimeType)}`}
                               href={item.imageUrl}
                               title="下载图片"
@@ -1103,7 +1101,7 @@ export default function ImageGenerationPage() {
                             </a>
                             <button
                               aria-label="删除本地记录"
-                              className="flex size-9 items-center justify-center rounded-md border border-slate-200 text-slate-500 hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                              className="flex size-8 items-center justify-center rounded-md border border-[#d9dfdc] bg-[#fffefa] text-[#929b98] hover:border-[#e8c9c0] hover:bg-[#fff4f1] hover:text-[#a14e43]"
                               onClick={() => void handleDeleteHistoryItem(item)}
                               title="删除本地记录"
                               type="button"
@@ -1120,6 +1118,7 @@ export default function ImageGenerationPage() {
             </section>
           </div>
         </section>
+        </div>
       </main>
 
       <Dialog
@@ -1130,15 +1129,15 @@ export default function ImageGenerationPage() {
         }}
         open={previewHistoryItem !== null}
       >
-        <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-hidden rounded-lg p-0 sm:max-w-5xl">
-          <DialogHeader className="border-b border-slate-200 px-5 py-4 pr-12 sm:px-6">
-            <DialogTitle>图片预览</DialogTitle>
-            <DialogDescription>查看本地历史中的原始生成结果。</DialogDescription>
+        <DialogContent className="max-h-[calc(100dvh-2rem)] gap-0 overflow-hidden rounded-xl border-[#dfe3e1] bg-[#fffefa] p-0 shadow-[0_18px_60px_rgba(39,53,58,0.16)] sm:max-w-5xl">
+          <DialogHeader className="border-b border-[#e3e6e4] bg-[#fbfaf7] px-5 py-4 pr-12 sm:px-6">
+            <DialogTitle className="text-base text-[#27353a]">图片预览</DialogTitle>
+            <DialogDescription className="text-xs text-[#929b98]">查看本地历史中的原始生成结果。</DialogDescription>
           </DialogHeader>
 
           {previewHistoryItem ? (
             <div className="grid min-h-0 overflow-y-auto lg:grid-cols-[minmax(0,1fr)_18rem]">
-              <div className="flex min-h-72 items-center justify-center bg-slate-50 p-4 sm:p-6">
+              <div className="flex min-h-72 items-center justify-center bg-[#f7f8f6] p-4 sm:p-6">
                 <img
                   alt={previewHistoryItem.prompt || "生成图片预览"}
                   className="max-h-[calc(100dvh-13rem)] max-w-full object-contain"
@@ -1146,32 +1145,32 @@ export default function ImageGenerationPage() {
                 />
               </div>
 
-              <div className="border-t border-slate-200 px-5 py-5 lg:border-l lg:border-t-0 lg:px-6">
-                <p className="text-xs font-medium text-slate-400">提示词</p>
-                <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">
+              <div className="border-t border-[#e3e6e4] bg-[#fffefa] px-5 py-5 lg:border-l lg:border-t-0 lg:px-6">
+                <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-[#a37b4f]">提示词</p>
+                <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-[#53615e]">
                   {previewHistoryItem.prompt}
                 </p>
 
-                <dl className="mt-6 grid grid-cols-[4rem_minmax(0,1fr)] gap-x-3 gap-y-3 border-t border-slate-100 pt-5 text-xs">
-                  <dt className="text-slate-400">风格</dt>
-                  <dd className="text-slate-700">{previewHistoryItem.styleLabel || "自动"}</dd>
-                  <dt className="text-slate-400">模型</dt>
-                  <dd className="break-all text-slate-700">{previewHistoryItem.model}</dd>
-                  <dt className="text-slate-400">尺寸</dt>
-                  <dd className="text-slate-700">{previewHistoryItem.size}</dd>
-                  <dt className="text-slate-400">图片质量</dt>
-                  <dd className="text-slate-700">{previewHistoryItem.quality || "未记录"}</dd>
-                  <dt className="text-slate-400">思考强度</dt>
-                  <dd className="text-slate-700">{previewHistoryItem.reasoningEffort || "不适用"}</dd>
-                  <dt className="text-slate-400">耗时</dt>
-                  <dd className="text-slate-700">{formatGenerationDuration(previewHistoryItem.durationMs)}</dd>
-                  <dt className="text-slate-400">生成时间</dt>
-                  <dd className="text-slate-700">{formatDateTime(previewHistoryItem.createdAtMs)}</dd>
+                <dl className="mt-6 grid grid-cols-[4rem_minmax(0,1fr)] gap-x-3 gap-y-3 border-t border-[#edf0ee] pt-5 text-xs">
+                  <dt className="text-[#929b98]">风格</dt>
+                  <dd className="text-[#53615e]">{previewHistoryItem.styleLabel || "自动"}</dd>
+                  <dt className="text-[#929b98]">模型</dt>
+                  <dd className="break-all text-[#53615e]">{previewHistoryItem.model}</dd>
+                  <dt className="text-[#929b98]">尺寸</dt>
+                  <dd className="text-[#53615e]">{previewHistoryItem.size}</dd>
+                  <dt className="text-[#929b98]">图片质量</dt>
+                  <dd className="text-[#53615e]">{previewHistoryItem.quality || "未记录"}</dd>
+                  <dt className="text-[#929b98]">思考强度</dt>
+                  <dd className="text-[#53615e]">{previewHistoryItem.reasoningEffort || "不适用"}</dd>
+                  <dt className="text-[#929b98]">耗时</dt>
+                  <dd className="text-[#53615e]">{formatGenerationDuration(previewHistoryItem.durationMs)}</dd>
+                  <dt className="text-[#929b98]">生成时间</dt>
+                  <dd className="text-[#53615e]">{formatDateTime(previewHistoryItem.createdAtMs)}</dd>
                 </dl>
 
                 <Button
                   asChild
-                  className="mt-6 w-full !bg-slate-950 !text-white hover:!bg-slate-800"
+                  className="mt-6 w-full !bg-[#27353a] !text-white hover:!bg-[#35484c]"
                   size="lg"
                 >
                   <a

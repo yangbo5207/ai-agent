@@ -380,7 +380,7 @@ export default function SkillsPage() {
 
   return (
     <DashboardShell title="Skills">
-      <main className="min-h-[calc(100vh-4rem)] bg-slate-50/70">
+      <main className="min-h-full bg-[#fffefa]">
         <section className="border-b border-slate-200 bg-white">
           <div className="mx-auto flex max-w-[90rem] flex-col gap-6 px-5 py-7 lg:flex-row lg:items-end lg:justify-between lg:px-8">
             <div>

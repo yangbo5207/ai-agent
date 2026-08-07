@@ -21,37 +21,37 @@ import {
 const data = {
   navMain: [
     {
-      title: "聊天",
+      title: "Chat",
       url: "/",
       icon: Inbox,
     },
     {
-      title: "Agent 群聊",
+      title: "Agent Groups",
       url: "/group-chats",
       icon: MessagesSquare,
     },
     {
-      title: "图片生成",
+      title: "Image Generation",
       url: "/image-generation",
       icon: ImageIcon,
     },
     {
-      title: "发现",
+      title: "Discover",
       url: "/discover",
       icon: Compass,
     },
     {
-      title: "创建 Agent 伴侣",
+      title: "Create Companion",
       url: "/create-agent-companion",
       icon: Bot,
     },
     {
-      title: "我的伴侣",
+      title: "My Companions",
       url: "/companions",
       icon: Heart,
     },
     {
-      title: "记忆库",
+      title: "Memory",
       url: "/memories",
       icon: Brain,
     },
@@ -61,22 +61,22 @@ const data = {
       icon: Puzzle,
     },
     {
-      title: "订阅套餐",
+      title: "Plans",
       url: "/subscription-plans",
       icon: Sparkles,
     },
     {
-      title: "购买 Token",
+      title: "Buy Tokens",
       url: "/buy-tokens",
       icon: Coins,
     },
     {
-      title: "LLM 接入",
+      title: "LLM Access",
       url: "/llm-access",
       icon: PlugZap,
     },
     {
-      title: "个人中心",
+      title: "Profile",
       url: "/profile",
       icon: UserRound,
     },
@@ -88,7 +88,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { profile } = useWebDashboardContext()
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar
+      className="!bg-[#eef0f1] [&_[data-sidebar=sidebar]]:!bg-[#eef0f1]"
+      collapsible="icon"
+      variant="sidebar"
+      {...props}
+    >
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -98,12 +103,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               className="group-data-[collapsible=icon]:h-12! group-data-[collapsible=icon]:w-8!"
             >
               <Link href="/">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-[#27353a] text-[#d7bb89]">
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Acme Inc</span>
-                  <span className="truncate text-xs">Enterprise</span>
+                  <span className="truncate text-[13px] font-semibold text-[#27353a]">Companion</span>
+                  <span className="truncate text-[9px] uppercase tracking-[0.16em] text-[#9a8d7e]">Companion Space</span>
                 </div>
               </Link>
             </SidebarMenuButton>
@@ -122,6 +127,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       asChild
+                      className="text-[13px]"
                       tooltip={{
                         children: item.title,
                         hidden: false,

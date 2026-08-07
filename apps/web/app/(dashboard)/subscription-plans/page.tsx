@@ -91,7 +91,7 @@ function CapabilityValue({ value }: { value: string | boolean }) {
 export default function SubscriptionPlansPage() {
   return (
     <DashboardShell title="订阅套餐">
-      <main className="min-h-[calc(100vh-4rem)] bg-slate-50/70">
+      <main className="min-h-full bg-[#fffefa]">
         <section className="border-b border-slate-200 bg-white">
           <div className="mx-auto flex max-w-[90rem] flex-col gap-5 px-5 py-6 lg:px-8 lg:py-7 xl:flex-row xl:items-end xl:justify-between">
             <div>

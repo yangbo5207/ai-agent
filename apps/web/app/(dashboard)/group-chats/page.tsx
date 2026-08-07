@@ -151,18 +151,22 @@ function GroupChatList({
   selectedGroupChatId,
 }: GroupChatListProps) {
   return (
-    <aside className={cn("flex min-h-0 flex-col overflow-hidden border border-slate-200 bg-white", className)}>
-      <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4">
-        <div>
-          <p className="text-sm font-semibold text-slate-900">群聊</p>
-          <p className="mt-1 text-xs text-slate-400">选择一个会话继续讨论</p>
+    <aside className={cn("flex min-h-0 flex-col overflow-hidden border-[#e3e6e4] bg-[#fffefa]", className)}>
+      <div className="flex h-11 shrink-0 items-center justify-between gap-2 border-b border-[#e3e6e4] px-3">
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#f1f3f1] text-[#687572]">
+            <MessagesSquare className="size-3.5" />
+          </span>
+          <p className="truncate text-[13px] font-semibold text-[#27353a]">
+            群聊
+            <span className="ml-1.5 text-[11px] font-normal text-[#9a8d7e]">{groupChats.length}</span>
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">{groupChats.length}</span>
+        <div className="flex items-center gap-1">
           {onClose ? (
             <button
               aria-label="关闭群聊列表"
-              className="flex size-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100"
+              className="flex size-7 items-center justify-center rounded-full text-[#7d8583] transition-colors hover:bg-[#f0f1f0] hover:text-[#27353a]"
               onClick={onClose}
               title="关闭"
               type="button"
@@ -174,36 +178,39 @@ function GroupChatList({
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         {isLoading ? (
-          <div className="flex min-h-44 items-center justify-center text-sm text-slate-400">正在加载群聊...</div>
+          <div className="flex min-h-44 items-center justify-center text-[11px] text-[#929b98]">正在加载群聊...</div>
         ) : isError ? (
-          <div className="flex min-h-44 items-center justify-center px-4 text-center text-sm text-red-600">群聊列表加载失败</div>
+          <div className="flex min-h-44 items-center justify-center px-4 text-center text-sm text-[#a14e43]">群聊列表加载失败</div>
         ) : groupChats.length === 0 ? (
           <div className="flex min-h-44 flex-col items-center justify-center px-5 text-center">
-            <MessagesSquare className="size-8 text-slate-300" />
-            <p className="mt-3 text-sm font-medium text-slate-700">还没有群聊</p>
-            <p className="mt-1 text-xs leading-5 text-slate-400">创建一个群聊，邀请 Agent 一起参与讨论。</p>
+            <span className="flex size-10 items-center justify-center rounded-full bg-[#27353a] text-[#d7bb89]"><MessagesSquare className="size-4" /></span>
+            <p className="mt-3 text-[12px] font-semibold text-[#53615e]">还没有群聊</p>
+            <p className="mt-1 text-[10px] leading-5 text-[#929b98]">创建一个群聊，邀请 Agent 一起参与讨论。</p>
           </div>
         ) : (
-          <div className="divide-y divide-slate-100">
+          <div>
             {groupChats.map((groupChat) => {
               const selected = groupChat.id === selectedGroupChatId
 
               return (
                 <button
-                  className={cn("relative w-full px-4 py-3 text-left transition-colors", selected ? "bg-slate-50" : "bg-white hover:bg-slate-50")}
+                  className={cn(
+                    "group relative flex w-full flex-col gap-1.5 rounded-none px-3 py-3 text-left transition-[background-color,opacity] duration-200 before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-[linear-gradient(90deg,transparent_0%,#d6e1db_22%,#d6e1db_78%,transparent_100%)] before:opacity-0 after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-px after:bg-[linear-gradient(90deg,transparent_0%,#d6e1db_22%,#d6e1db_78%,transparent_100%)] after:opacity-0",
+                    "focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#9b7851]",
+                    selected ? "bg-[#f1f5f2] before:opacity-100 after:opacity-100" : "hover:bg-[#f7f9f7] hover:before:opacity-100 hover:after:opacity-100",
+                  )}
                   key={groupChat.id}
                   onClick={() => onSelect(groupChat.id)}
                   type="button"
                 >
-                  {selected ? <span className="absolute inset-y-0 left-0 w-0.5 bg-slate-950" /> : null}
                   <span className="flex items-center justify-between gap-3">
-                    <span className="truncate text-sm font-medium text-slate-800">{groupChat.title}</span>
-                    <span className="shrink-0 text-[11px] text-slate-400">{formatTime(groupChat.lastMessageAtMs)}</span>
+                    <span className="truncate text-[13px] font-semibold text-[#27353a]">{groupChat.title}</span>
+                    <span className="shrink-0 text-[10px] text-[#9a8d7e]">{formatTime(groupChat.lastMessageAtMs)}</span>
                   </span>
-                  <span className="mt-1 block truncate text-xs leading-5 text-slate-400">{getMessagePreview(groupChat)}</span>
-                  <span className="mt-2 flex items-center gap-1">
+                  <span className="block truncate text-[11px] leading-5 text-[#929b98]">{getMessagePreview(groupChat)}</span>
+                  <span className="mt-1.5 flex items-center gap-1">
                     {groupChat.members.slice(0, 4).map((member) => <AgentAvatar className="size-5 rounded-sm" imageKey={member.imageKey} key={member.id} name={member.name} />)}
-                    {groupChat.members.length > 4 ? <span className="text-[11px] text-slate-400">+{groupChat.members.length - 4}</span> : null}
+                    {groupChat.members.length > 4 ? <span className="text-[10px] text-[#9a8d7e]">+{groupChat.members.length - 4}</span> : null}
                   </span>
                 </button>
               )
@@ -245,19 +252,23 @@ function GroupMembersPanel({
   readonly,
 }: GroupMembersPanelProps) {
   return (
-    <aside className={cn("min-h-0 overflow-hidden border border-slate-200 bg-white", className)}>
+    <aside className={cn("min-h-0 overflow-hidden border-[#e3e6e4] bg-[#fffefa]", className)}>
       <section>
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4">
-          <div>
-            <p className="text-sm font-semibold text-slate-900">群成员</p>
-            <p className="mt-1 text-xs text-slate-400">{members.length} / 6 位 Agent</p>
+        <div className="flex h-11 items-center justify-between gap-2 border-b border-[#e3e6e4] px-3">
+          <div className="flex min-w-0 items-center gap-2">
+            <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#f1f3f1] text-[#687572]">
+              <Users className="size-3.5" />
+            </span>
+            <p className="truncate text-[13px] font-semibold text-[#27353a]">
+              群成员
+              <span className="ml-1.5 text-[11px] font-normal text-[#9a8d7e]">{members.length} / 6</span>
+            </p>
           </div>
           <div className="flex items-center gap-2">
-            <Users className="size-4 text-slate-400" />
             {onClose ? (
               <button
                 aria-label="关闭成员管理"
-                className="flex size-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100"
+                className="flex size-7 items-center justify-center rounded-full text-[#7d8583] transition-colors hover:bg-[#f0f1f0] hover:text-[#27353a]"
                 onClick={onClose}
                 title="关闭"
                 type="button"
@@ -267,20 +278,19 @@ function GroupMembersPanel({
             ) : null}
           </div>
         </div>
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-[#edf0ee]">
           {members.length === 0 ? (
-            <div className="px-4 py-8 text-center text-sm text-slate-400">暂无成员</div>
+            <div className="px-3 py-8 text-center text-[11px] text-[#929b98]">暂无成员</div>
           ) : (
             members.map((member) => (
-              <div className="flex items-center gap-3 px-4 py-3" key={member.id}>
+              <div className="flex items-center gap-3 px-3 py-3" key={member.id}>
                 <AgentAvatar className="size-8 rounded-md" imageKey={member.imageKey} name={member.name} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-slate-700">{member.name}</p>
-                  <p className="mt-0.5 truncate text-xs text-slate-400">{member.headline || "Agent 伴侣"}</p>
+                  <p className="truncate text-[13px] font-semibold text-[#27353a]">{member.name}</p>
                 </div>
                 <button
                   aria-label={`移除 ${member.name}`}
-                  className="flex size-7 items-center justify-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
+                  className="flex size-7 items-center justify-center rounded-full text-[#9aa29f] transition-colors hover:bg-[#f0f1f0] hover:text-[#53615e] disabled:opacity-50"
                   disabled={readonly || isRemoving || members.length <= 1}
                   onClick={() => onRemoveMember(member.id)}
                   title={`移除 ${member.name}`}
@@ -294,32 +304,32 @@ function GroupMembersPanel({
         </div>
       </section>
 
-      <section className="border-t border-slate-200">
-        <div className="flex items-center justify-between px-4 py-4">
-          <div>
-            <p className="text-sm font-semibold text-slate-900">邀请 Agent</p>
-            <p className="mt-1 text-xs text-slate-400">从你的伴侣列表中加入</p>
-          </div>
-          <Bot className="size-4 text-slate-400" />
+      <section className="border-t border-[#e3e6e4]">
+        <div className="flex items-center justify-between gap-2 px-3 py-3">
+          <p className="flex items-center gap-2 text-[12px] font-semibold text-[#53615e]">
+            <Bot className="size-3.5 text-[#a37b4f]" />
+            邀请 Agent
+          </p>
+          <span className="text-[10px] text-[#9a8d7e]">最多 6 位</span>
         </div>
-        <div className="relative px-4">
-          <Search className="pointer-events-none absolute left-7 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+        <div className="relative px-3">
+          <Search className="pointer-events-none absolute left-6 top-1/2 size-3.5 -translate-y-1/2 text-[#9aa29f]" />
           <Input
-            className="h-9 rounded-md border-slate-200 bg-white pl-9 text-sm"
+            className="h-8 rounded-md border-0 bg-[#f1f3f1] pl-8 text-[11px] text-[#53615e] shadow-none placeholder:text-[#9aa29f] focus-visible:ring-1 focus-visible:ring-[#b8c7bf]"
             onChange={(event) => onAgentSearchChange(event.currentTarget.value)}
             placeholder="搜索 Agent"
             value={agentSearch}
           />
         </div>
-        <div className="mt-3 divide-y divide-slate-100 px-4 pb-4">
+        <div className="mt-2 divide-y divide-[#edf0ee] px-3 pb-3">
           {isLoadingAgents ? (
-            <div className="py-6 text-center text-sm text-slate-400">正在加载 Agent...</div>
+            <div className="py-6 text-center text-[11px] text-[#929b98]">正在加载 Agent...</div>
           ) : filteredAgents.length === 0 ? (
-            <div className="py-6 text-center text-sm text-slate-400">没有可邀请的 Agent</div>
+            <div className="py-6 text-center text-[11px] text-[#929b98]">没有可邀请的 Agent</div>
           ) : (
             filteredAgents.map((agent) => (
               <button
-                className="flex w-full items-center gap-3 py-3 text-left transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex w-full items-center gap-3 rounded-none py-2.5 text-left transition-colors hover:bg-[#f7f9f7] disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={readonly || members.length >= 6 || isAdding}
                 key={agent.id}
                 onClick={() => onAddAgent(agent.id)}
@@ -327,10 +337,9 @@ function GroupMembersPanel({
               >
                 <AgentAvatar className="size-8 rounded-md" imageKey={agent.imageKey} name={agent.name} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-medium text-slate-700">{agent.name}</span>
-                  <span className="mt-0.5 block truncate text-xs text-slate-400">{agent.headline}</span>
+                  <span className="block truncate text-[12px] font-semibold text-[#27353a]">{agent.name}</span>
                 </span>
-                <CirclePlus className="size-4 shrink-0 text-slate-400" />
+                <CirclePlus className="size-4 shrink-0 text-[#a37b4f]" />
               </button>
             ))
           )}
@@ -393,18 +402,18 @@ function GroupCreateDialog({ agents, open, onCreated, onOpenChange }: GroupCreat
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl rounded-lg p-0">
-        <DialogHeader className="border-b px-5 py-4">
-          <DialogTitle>创建 Agent 群聊</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="max-w-2xl rounded-xl border-[#dfe3e1] bg-[#fffefa] p-0 shadow-[0_18px_50px_rgba(39,53,58,0.14)]">
+        <DialogHeader className="border-b border-[#e3e6e4] px-5 py-4">
+          <DialogTitle className="text-base text-[#27353a]">创建 Agent 群聊</DialogTitle>
+          <DialogDescription className="text-xs leading-5 text-[#89928f]">
             选择 1-6 个 Agent。第一版采用受控回复，每轮会选择最合适的 1-3 个 Agent 发言。
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 px-5 py-4">
           <label className="grid gap-2">
-            <span className="text-xs font-medium text-muted-foreground">群聊名称</span>
+            <span className="text-xs font-medium text-[#687572]">群聊名称</span>
             <Input
-              className="h-10 rounded-md"
+              className="h-9 rounded-md border-[#d9dfdc] bg-[#fffefa] text-sm shadow-none focus-visible:ring-[#dce5e0]"
               onChange={(event) => setTitle(event.currentTarget.value)}
               placeholder="例如：深夜陪伴小队"
               value={title}
@@ -412,12 +421,12 @@ function GroupCreateDialog({ agents, open, onCreated, onOpenChange }: GroupCreat
           </label>
           <div className="grid gap-2">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-xs font-medium text-muted-foreground">邀请 Agent</span>
-              <span className="text-xs text-muted-foreground">{selectedAgentIds.length}/6</span>
+              <span className="text-xs font-medium text-[#687572]">邀请 Agent</span>
+              <span className="text-[11px] text-[#9a8d7e]">{selectedAgentIds.length}/6</span>
             </div>
-            <div className="max-h-[20rem] overflow-y-auto border-y border-slate-200">
+            <div className="max-h-[20rem] overflow-y-auto border-y border-[#e3e6e4]">
               {agents.length === 0 ? (
-                <div className="flex min-h-40 items-center justify-center text-sm text-muted-foreground">
+                <div className="flex min-h-40 items-center justify-center text-sm text-[#929b98]">
                   还没有可邀请的 Agent
                 </div>
               ) : (
@@ -427,8 +436,8 @@ function GroupCreateDialog({ agents, open, onCreated, onOpenChange }: GroupCreat
                   return (
                     <button
                       className={cn(
-                        "flex w-full items-center gap-3 border-b border-slate-100 px-1 py-3 text-left transition-colors last:border-b-0",
-                        selected ? "bg-slate-100" : "hover:bg-slate-50",
+                        "flex w-full items-center gap-3 border-b border-[#edf0ee] px-1 py-3 text-left transition-colors last:border-b-0",
+                        selected ? "bg-[#f1f5f2]" : "hover:bg-[#f7f9f7]",
                       )}
                       key={agent.id}
                       onClick={() => toggleAgent(agent.id)}
@@ -440,13 +449,13 @@ function GroupCreateDialog({ agents, open, onCreated, onOpenChange }: GroupCreat
                         name={agent.name}
                       />
                       <div className="min-w-0 flex-1">
-                        <div className="truncate text-sm font-semibold text-slate-950">{agent.name}</div>
-                        <div className="mt-0.5 truncate text-xs text-muted-foreground">{agent.headline}</div>
+                        <div className="truncate text-sm font-semibold text-[#27353a]">{agent.name}</div>
+                        <div className="mt-0.5 truncate text-xs text-[#929b98]">{agent.headline}</div>
                       </div>
                       <span
                         className={cn(
                           "flex size-6 items-center justify-center rounded-full border",
-                          selected ? "border-slate-950 bg-slate-950 text-white" : "border-slate-200 text-transparent",
+                          selected ? "border-[#27353a] bg-[#27353a] text-white" : "border-[#d9dfdc] text-transparent",
                         )}
                       >
                         <Check className="size-3.5" />
@@ -458,13 +467,14 @@ function GroupCreateDialog({ agents, open, onCreated, onOpenChange }: GroupCreat
             </div>
           </div>
           {createMutation.isError ? (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <div className="rounded-md border border-[#e8c9c0] bg-[#fff4f1] px-3 py-2 text-sm text-[#a14e43]">
               {createMutation.error instanceof Error ? createMutation.error.message : "创建群聊失败"}
             </div>
           ) : null}
         </div>
-        <DialogFooter className="mx-0 mb-0 rounded-b-2xl">
+        <DialogFooter className="mx-0 mb-0 border-t border-[#e3e6e4] bg-[#f7f8f6] px-5 py-3">
           <Button
+            className="h-9 rounded-md bg-[#27353a] px-4 text-sm text-white hover:bg-[#35484c]"
             disabled={!title.trim() || selectedAgentIds.length === 0 || createMutation.isPending}
             onClick={() => createMutation.mutate()}
           >
@@ -491,16 +501,16 @@ function MessageBubble({ message }: { message: AgentGroupChatMessage }) {
         />
       ) : null}
       <div className={cn("max-w-[82%] sm:max-w-[min(38rem,82%)]", isUser && "order-first")}>
-        <div className={cn("mb-1 flex items-center gap-2 text-xs text-muted-foreground", isUser && "justify-end")}>
-          <span>{isUser ? "你" : message.agentName ?? "Agent"}</span>
+        <div className={cn("mb-1 flex items-center gap-2 text-[10px] text-[#9a8d7e]", isUser && "justify-end")}>
+          {!isUser ? <span>{message.agentName ?? "Agent"}</span> : null}
           <span>{formatTime(message.createdAtMs)}</span>
         </div>
         <div
           className={cn(
-            "border px-4 py-3 text-sm leading-6",
+            "relative border px-4 py-3 text-sm leading-6",
             isUser
-              ? "whitespace-pre-wrap rounded-md border-slate-950 bg-slate-950 text-white"
-              : "rounded-md border-slate-200 bg-white text-slate-800",
+              ? "whitespace-pre-wrap rounded-md border-[#27353a] bg-[#27353a] text-[#fbfaf7] shadow-[0_8px_20px_rgba(39,53,58,0.12)] before:absolute before:top-3 before:-right-2 before:h-0 before:w-0 before:border-y-[6px] before:border-y-transparent before:border-l-[8px] before:border-l-[#27353a]"
+              : "rounded-md border-[#e3dbd0] bg-[#fbfaf7] text-[#27353a] shadow-[0_8px_20px_rgba(53,44,34,0.04)] before:absolute before:top-2 before:-left-2 before:h-0 before:w-0 before:border-y-[6px] before:border-y-transparent before:border-r-[8px] before:border-r-[#e3dbd0] after:absolute after:top-[9px] after:-left-[6px] after:h-0 after:w-0 after:border-y-[5px] after:border-y-transparent after:border-r-[7px] after:border-r-[#fbfaf7]",
           )}
         >
           {isUser ? (
@@ -513,7 +523,7 @@ function MessageBubble({ message }: { message: AgentGroupChatMessage }) {
         </div>
       </div>
       {isUser ? (
-        <span className="mt-5 flex size-8 shrink-0 items-center justify-center rounded-md border border-slate-950 bg-slate-950 text-white">
+        <span className="mt-5 flex size-8 shrink-0 items-center justify-center rounded-md bg-[#27353a] text-[#fbfaf7]">
           <Users className="size-4" />
         </span>
       ) : null}
@@ -796,17 +806,20 @@ export default function GroupChatsPage() {
 
   return (
     <DashboardShell title="Agent 群聊">
-      <main className="flex h-[calc(100dvh-4rem)] min-h-0 flex-col overflow-hidden bg-slate-50/70">
-        <section className="shrink-0 border-b bg-white">
-          <div className="mx-auto flex max-w-[90rem] items-end justify-between gap-3 px-4 py-4 sm:gap-4 sm:px-5 sm:py-6 lg:px-8">
+      <main className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[#eef0f1]">
+        <section className="shrink-0 border-b border-[#e3e6e4] bg-[#fffefa]">
+          <div className="mx-auto flex max-w-[90rem] items-center justify-between gap-3 px-4 py-4 sm:gap-4 sm:px-6 lg:px-8">
             <div>
-              <p className="text-xs font-medium text-slate-400">MULTI-AGENT</p>
-              <h1 className="mt-1 text-xl font-semibold text-slate-950 sm:mt-2 sm:text-2xl">Agent 群聊</h1>
-              <p className="mt-2 hidden max-w-2xl text-sm leading-6 text-slate-600 sm:block">让多个 Agent 围绕同一个话题协作回应，每轮由系统控制参与范围。</p>
+              <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#a37b4f]">
+                <MessagesSquare className="size-3.5" />
+                Multi-agent
+              </p>
+              <h1 className="mt-1 text-lg font-semibold text-[#27353a] sm:text-xl">Agent 群聊</h1>
+              <p className="mt-1 hidden max-w-2xl text-[12px] leading-5 text-[#89928f] sm:block">让多个 Agent 围绕同一个话题协作回应，每轮由系统控制参与范围。</p>
             </div>
             <div className="flex shrink-0 items-center gap-3 sm:gap-4">
-              <span className="hidden text-sm text-slate-500 sm:inline">{groupChats.length} 个群聊</span>
-              <Button className="h-9 rounded-md px-3 sm:h-10 sm:px-4" onClick={() => setCreateDialogOpen(true)}>
+              <span className="hidden text-[11px] text-[#9a8d7e] sm:inline">{groupChats.length} 个群聊</span>
+              <Button className="h-8 rounded-md bg-[#27353a] px-3 text-xs text-white hover:bg-[#35484c] sm:h-9 sm:px-3.5" onClick={() => setCreateDialogOpen(true)}>
                 <CirclePlus className="size-4" />
                 新建群聊
               </Button>
@@ -814,9 +827,9 @@ export default function GroupChatsPage() {
           </div>
         </section>
 
-        <section className="mx-auto grid min-h-0 w-full max-w-[90rem] flex-1 gap-4 px-0 py-0 sm:px-5 sm:py-6 lg:grid-cols-[18rem_minmax(0,1fr)_18rem] lg:gap-6 lg:overflow-hidden lg:px-8 lg:py-8">
+        <section className="mx-auto grid min-h-0 w-full max-w-[90rem] flex-1 overflow-hidden border-[#dfe3e1] bg-[#fffefa] px-0 py-0 sm:m-4 sm:w-[calc(100%-2rem)] sm:rounded-xl sm:border lg:grid-cols-[17rem_minmax(0,1fr)_17rem] lg:gap-0 lg:px-0 lg:py-0">
           <GroupChatList
-            className="hidden lg:flex"
+            className="hidden border-r lg:flex"
             groupChats={groupChats}
             isError={groupChatsQuery.isError}
             isLoading={groupChatsQuery.isLoading}
@@ -824,14 +837,14 @@ export default function GroupChatsPage() {
             selectedGroupChatId={selectedGroupChat?.id ?? null}
           />
 
-          <section className="flex min-h-0 flex-col overflow-hidden bg-white sm:border sm:border-slate-200">
+          <section className="flex min-h-0 flex-col overflow-hidden border-[#e3e6e4] bg-[#fffefa] lg:border-r">
             {selectedGroupChat ? (
               <>
-                <header className="flex shrink-0 items-center justify-between gap-3 border-b px-3 py-3 sm:px-5">
+                <header className="flex min-h-16 shrink-0 items-center justify-between gap-3 border-b border-[#e3e6e4] bg-[#fbfaf7] px-3 py-2.5 sm:px-5">
                   <div className="flex min-w-0 items-center gap-2">
                     <button
                       aria-label="选择群聊"
-                      className="flex size-8 shrink-0 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 lg:hidden"
+                      className="flex size-8 shrink-0 items-center justify-center rounded-full text-[#897d6f] hover:bg-[#ebe4da] lg:hidden"
                       onClick={() => setIsMobileGroupListOpen(true)}
                       title="选择群聊"
                       type="button"
@@ -839,36 +852,41 @@ export default function GroupChatsPage() {
                       <PanelLeftOpen className="size-4" />
                     </button>
                     <div className="min-w-0">
-                      <h2 className="truncate text-base font-semibold text-slate-900">{selectedGroupChat.title}</h2>
-                      <p className="mt-1 text-xs text-slate-400">{currentMembers.length} 位 Agent · {detailQuery.data?.groupChat.messageCount ?? selectedGroupChat.messageCount} 条消息</p>
+                      <h2 className="truncate text-sm font-semibold text-[#27353a]">{selectedGroupChat.title}</h2>
+                      <p className="mt-0.5 flex items-center gap-1.5 text-[10px] text-[#89928f]">
+                        <Users className="size-3 text-[#a37b4f]" />
+                        {currentMembers.length} 位 Agent
+                        <span className="text-[#c0c8c4]">·</span>
+                        {detailQuery.data?.groupChat.messageCount ?? selectedGroupChat.messageCount} 条消息
+                      </p>
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
                     <button
                       aria-label="管理群成员"
-                      className="flex size-8 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 lg:hidden"
+                      className="flex size-8 items-center justify-center rounded-full text-[#897d6f] hover:bg-[#ebe4da] lg:hidden"
                       onClick={() => setIsMobileMembersOpen(true)}
                       title="管理群成员"
                       type="button"
                     >
                       <Users className="size-4" />
                     </button>
-                    <div className="hidden items-center -space-x-1.5 sm:flex">
-                      {currentMembers.slice(0, 5).map((member) => <AgentAvatar className="size-7 rounded-md border-2 border-white" imageKey={member.imageKey} key={member.id} name={member.name} />)}
+                    <div className="hidden items-center -space-x-1 sm:flex">
+                      {currentMembers.slice(0, 5).map((member) => <AgentAvatar className="size-7 rounded-md border-2 border-[#fbfaf7]" imageKey={member.imageKey} key={member.id} name={member.name} />)}
                     </div>
                   </div>
                 </header>
-                <div ref={messageScrollRef} className="min-h-0 flex-1 overflow-y-auto bg-slate-50/70 px-3 py-4 sm:px-5 sm:py-6">
+                <div ref={messageScrollRef} className="min-h-0 flex-1 overflow-y-auto bg-[#fffefa] px-3 py-5 sm:px-5 sm:py-7">
                   {detailQuery.isLoading ? (
-                    <div className="flex h-full min-h-80 items-center justify-center text-sm text-slate-400">正在加载群聊消息...</div>
+                    <div className="flex h-full min-h-80 items-center justify-center text-[11px] text-[#929b98]">正在加载群聊消息...</div>
                   ) : detailQuery.isError ? (
-                    <div className="flex h-full min-h-80 items-center justify-center text-sm text-red-600">群聊消息加载失败</div>
+                    <div className="flex h-full min-h-80 items-center justify-center text-sm text-[#a14e43]">群聊消息加载失败</div>
                   ) : messages.length === 0 ? (
                     <div className="flex min-h-80 items-center justify-center">
                       <div className="max-w-md text-center">
-                        <MessageCircle className="mx-auto size-9 text-slate-300" />
-                        <p className="mt-4 text-sm font-medium text-slate-700">开始第一轮群聊</p>
-                        <p className="mt-2 text-sm leading-6 text-slate-400">直接提问或点名某个 Agent；也可以说“你们怎么看”。</p>
+                        <span className="mx-auto flex size-11 items-center justify-center rounded-full bg-[#f1f3f1] text-[#7b8783]"><MessageCircle className="size-5" /></span>
+                        <p className="mt-4 text-sm font-semibold text-[#53615e]">开始第一轮群聊</p>
+                        <p className="mt-2 text-sm leading-6 text-[#929b98]">直接提问或点名某个 Agent；也可以说“你们怎么看”。</p>
                       </div>
                     </div>
                   ) : (
@@ -876,7 +894,7 @@ export default function GroupChatsPage() {
                       {detailQuery.data?.nextCursor ? (
                         <div className="flex justify-center">
                           <Button
-                            className="rounded-md"
+                            className="h-8 rounded-md border-[#dfe3e1] bg-[#f1f3f1] px-3 text-[11px] font-medium text-[#687572] shadow-none hover:bg-[#e7ece9] hover:text-[#27353a]"
                             disabled={loadMoreMessagesMutation.isPending}
                             onClick={() => {
                               if (selectedGroupChat && detailQuery.data?.nextCursor) {
@@ -895,15 +913,15 @@ export default function GroupChatsPage() {
                     </div>
                   )}
                   {sendMutation.isPending ? (
-                    <div className="mx-auto mt-5 flex max-w-3xl items-center gap-2 text-sm text-slate-500"><Loader2 className="size-4 animate-spin" /> Agent 正在组织回复...</div>
+                    <div className="mx-auto mt-5 flex max-w-3xl items-center gap-2 text-[11px] text-[#89928f]"><Loader2 className="size-3.5 animate-spin text-[#a37b4f]" /> Agent 正在组织回复...</div>
                   ) : null}
                   {sendMutation.isError ? (
-                    <div className="mx-auto mt-5 max-w-3xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{sendMutation.error instanceof Error ? sendMutation.error.message : "发送失败"}</div>
+                    <div className="mx-auto mt-5 max-w-3xl rounded-md border border-[#e8c9c0] bg-[#fff4f1] px-3 py-2 text-sm text-[#a14e43]">{sendMutation.error instanceof Error ? sendMutation.error.message : "发送失败"}</div>
                   ) : null}
                 </div>
-                <footer className="shrink-0 border-t bg-white px-3 py-3 sm:px-4 sm:py-4">
+                <footer className="shrink-0 bg-[#f7f8f6] px-3 pb-4 pt-3 sm:px-5">
                   <PromptInput
-                    className="mx-auto max-w-3xl border border-slate-200 bg-white"
+                    className="mx-auto max-w-3xl [&_[data-slot=input-group]]:rounded-lg [&_[data-slot=input-group]]:border-[#d9dfdc] [&_[data-slot=input-group]]:bg-[#fffefa] [&_[data-slot=input-group]]:shadow-[0_10px_28px_rgba(39,53,58,0.06)] [&_[data-slot=input-group]]:focus-within:border-[#9baba4] [&_[data-slot=input-group]]:focus-within:ring-2 [&_[data-slot=input-group]]:focus-within:ring-[#dce5e0]"
                     onSubmit={(message) => {
                       const text = message.text.trim()
 
@@ -916,11 +934,11 @@ export default function GroupChatsPage() {
                       sendMutation.mutate({ groupChatId: selectedGroupChat.id, message: text })
                     }}
                   >
-                    <PromptInputHeader className="border-b bg-slate-50/70 px-3 py-2">
-                      <div className="flex min-w-0 flex-1 gap-2 overflow-x-auto">
+                    <PromptInputHeader className="bg-transparent px-3 pb-1 pt-2.5">
+                      <div className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                         {groupQuickPrompts.map((prompt) => (
                           <button
-                            className="h-7 shrink-0 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="h-7 shrink-0 rounded-md bg-[#f1f3f1] px-2.5 text-[11px] font-medium text-[#68736f] transition-colors hover:bg-[#e7ece9] hover:text-[#27353a] disabled:cursor-not-allowed disabled:opacity-50"
                             disabled={isSending}
                             key={prompt}
                             onClick={() => {
@@ -936,7 +954,7 @@ export default function GroupChatsPage() {
                       </div>
                     </PromptInputHeader>
                     <PromptInputTextarea
-                      className="max-h-36 min-h-[4.5rem] px-3 py-3 text-sm sm:max-h-44 sm:min-h-20"
+                      className="max-h-44 min-h-16 px-4 py-2.5 text-sm leading-6 placeholder:text-[#a2aaa7] sm:min-h-16"
                       disabled={isSending}
                       onChange={(event) => {
                         updateDraftMessage(
@@ -980,8 +998,8 @@ export default function GroupChatsPage() {
                       value={draftMessage}
                     />
                     {mentionContext ? (
-                      <div className="absolute bottom-12 left-3 z-20 w-[min(22rem,calc(100%-1.5rem))] overflow-hidden rounded-md border border-slate-200 bg-white shadow-lg">
-                        <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2 text-xs text-slate-400">
+                      <div className="absolute bottom-12 left-3 z-20 w-[min(22rem,calc(100%-1.5rem))] overflow-hidden rounded-lg border border-[#d9dfdc] bg-[#fffefa] shadow-[0_12px_30px_rgba(39,53,58,0.1)]">
+                        <div className="flex items-center justify-between border-b border-[#e8ece9] px-3 py-2 text-[10px] text-[#89928f]">
                           <span>提及群成员</span>
                           <span>@{mentionContext.query || "全部"}</span>
                         </div>
@@ -991,7 +1009,7 @@ export default function GroupChatsPage() {
                               <button
                                 className={cn(
                                   "flex w-full items-center gap-2.5 rounded-md px-2 py-2 text-left transition-colors",
-                                  index === mentionIndex ? "bg-slate-100" : "hover:bg-slate-50",
+                                  index === mentionIndex ? "bg-[#f1f5f2]" : "hover:bg-[#f7f9f7]",
                                 )}
                                 key={member.id}
                                 onClick={() => insertMention(member)}
@@ -1000,22 +1018,22 @@ export default function GroupChatsPage() {
                               >
                                 <AgentAvatar className="size-7 rounded-md" imageKey={member.imageKey} name={member.name} />
                                 <span className="min-w-0 flex-1">
-                                  <span className="block truncate text-sm font-medium text-slate-700">{member.name}</span>
-                                  <span className="mt-0.5 block truncate text-xs text-slate-400">{member.headline || "Agent 伴侣"}</span>
+                                  <span className="block truncate text-[12px] font-semibold text-[#27353a]">{member.name}</span>
+                                  <span className="mt-0.5 block truncate text-[10px] text-[#929b98]">{member.headline || "Agent 伴侣"}</span>
                                 </span>
-                                <span className="shrink-0 text-xs text-slate-400">@{member.name}</span>
+                                <span className="shrink-0 text-[10px] text-[#9a8d7e]">@{member.name}</span>
                               </button>
                             ))}
                           </div>
                         ) : (
-                          <p className="px-3 py-4 text-sm text-slate-400">没有匹配的群成员</p>
+                          <p className="px-3 py-4 text-sm text-[#929b98]">没有匹配的群成员</p>
                         )}
                       </div>
                     ) : null}
-                    <PromptInputFooter className="border-t bg-slate-50/70 px-3 py-2">
-                      <PromptInputTools className="min-w-0 gap-2 text-xs text-muted-foreground">
+                    <PromptInputFooter className="bg-transparent px-3 pb-2.5 pt-1">
+                      <PromptInputTools className="min-w-0 gap-2 text-[11px] text-[#7d8985]">
                         <label className="flex min-w-0 items-center gap-1.5">
-                          <RadioTower className="size-3.5" />
+                          <RadioTower className="size-3.5 text-[#86958f]" />
                           <PromptInputSelect
                             disabled={isSending}
                             onValueChange={(value) => {
@@ -1026,12 +1044,12 @@ export default function GroupChatsPage() {
                           >
                             <PromptInputSelectTrigger
                               aria-label="选择本次群聊使用的 LLM"
-                              className="h-7 max-w-[calc(100vw-8rem)] rounded-md border border-slate-200 bg-white px-2.5 text-xs font-medium text-slate-600 hover:bg-slate-50 data-placeholder:text-slate-500 sm:max-w-56"
+                              className="h-7 max-w-[calc(100vw-8rem)] rounded-md border-0 bg-[#f1f3f1] px-2.5 text-[11px] font-medium text-[#68736f] hover:bg-[#e7ece9] data-placeholder:text-[#9aa39f] sm:max-w-56"
                               size="sm"
                             >
                               <PromptInputSelectValue placeholder="平台默认" />
                             </PromptInputSelectTrigger>
-                            <PromptInputSelectContent className="min-w-56 rounded-md border border-slate-200 shadow-none">
+                            <PromptInputSelectContent className="min-w-56 rounded-lg border border-[#d9dfdc] bg-[#fffefa] shadow-[0_12px_30px_rgba(39,53,58,0.1)]">
                               <PromptInputSelectItem value="platform-default">平台默认</PromptInputSelectItem>
                               {enabledLlmConfigs.map((item) => (
                                 <PromptInputSelectItem key={item.id} value={item.id}>
@@ -1043,7 +1061,7 @@ export default function GroupChatsPage() {
                         </label>
                       </PromptInputTools>
                       <PromptInputSubmit
-                        className="rounded-md"
+                        className="size-8 rounded-md bg-[#27353a] text-white hover:bg-[#35484c] disabled:bg-[#c8cfcc]"
                         disabled={!draftMessage.trim() || !selectedGroupChat || isSending}
                         status={isSending ? "submitted" : "ready"}
                       />
@@ -1052,12 +1070,12 @@ export default function GroupChatsPage() {
                 </footer>
               </>
             ) : (
-              <div className="flex flex-1 items-center justify-center px-5 py-12">
+              <div className="flex flex-1 items-center justify-center bg-[#fffefa] px-5 py-12">
                 <div className="max-w-md text-center">
-                  <MessagesSquare className="mx-auto size-10 text-slate-300" />
-                  <h2 className="mt-4 text-base font-semibold text-slate-950">创建第一个 Agent 群聊</h2>
-                  <p className="mt-2 text-sm leading-6 text-slate-500">选择多个 Agent，让它们围绕同一个话题协作回应。</p>
-                  <Button className="mt-5 rounded-md" onClick={() => setCreateDialogOpen(true)}>
+                  <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-[#27353a] text-[#d7bb89]"><MessagesSquare className="size-5" /></span>
+                  <h2 className="mt-5 text-lg font-semibold text-[#27353a]">创建第一个 Agent 群聊</h2>
+                  <p className="mt-2 text-sm leading-6 text-[#89928f]">选择多个 Agent，让它们围绕同一个话题协作回应。</p>
+                  <Button className="mt-6 h-9 rounded-md bg-[#27353a] px-4 text-sm text-white hover:bg-[#35484c]" onClick={() => setCreateDialogOpen(true)}>
                     <CirclePlus className="size-4" />
                     新建群聊
                   </Button>
